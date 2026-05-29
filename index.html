@@ -264,7 +264,7 @@
     <!-- 指定フッター -->
     <div class="footer">
       @SendaiNikaHighSchool2026 Global Study II Rainwater group<br>
-        System creat by kunisealiner880
+        System creat by kunisealiner
     </div>
   </div>
 
@@ -389,6 +389,27 @@ const firebaseConfig = {
             btn.innerText = "⏳ クラウドへ保存中...";
             
             // Firestoreに保存
+          // --- 修正箇所：ここから ---
+const gasUrl = https://script.google.com/macros/s/AKfycbyPIhxqIx_M9YmYtdgFWcxJVqE7m93UdCHQIG5zkZJ4d13kTLndkYxoDWaLVeMAZyKDHg/exec;
+
+// GAS（スプレッドシート）にも同時に送信
+fetch(gasUrl, {
+    method: "POST",
+    mode: "no-cors", // これが必要
+    body: JSON.stringify({
+        houseId: houseId,
+        inspector: inspector,
+        ownerName: ownerName,
+        familySize: familySize,
+        hasGutter: hasGutter,
+        note: note,
+        lat: pos.coords.latitude,
+        lng: pos.coords.longitude
+    })
+});
+// --- 修正箇所：ここまで ---
+
+// 既存のFirestore保存処理（db.collection("house_logs").add...）はそのまま残してOK
             db.collection("house_logs").add({
                 houseId: houseId,
                 inspector: inspector,
