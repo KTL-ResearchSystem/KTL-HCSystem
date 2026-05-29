@@ -390,13 +390,13 @@ const firebaseConfig = {
             
             // Firestoreに保存
           // --- 修正箇所：ここから ---
-const gasUrl = https://script.google.com/macros/s/AKfycbyPIhxqIx_M9YmYtdgFWcxJVqE7m93UdCHQIG5zkZJ4d13kTLndkYxoDWaLVeMAZyKDHg/exec;
+        const gasUrl = "https://script.google.com/macros/s/AKfycbyPIhxqIx_M9YmYtdgFWcxJVqE7m93UdCHQIG5zkZJ4d13kTLndkYxoDWaLVeMAZyKDHg/exec";
 
-// GAS（スプレッドシート）にも同時に送信
-fetch(gasUrl, {
-    method: "POST",
-    mode: "no-cors", // これが必要
-    body: JSON.stringify({
+        // GAS（スプレッドシート）にも同時に送信
+        fetch(gasUrl, {
+        method: "POST",
+        mode: "no-cors", // これが必要
+        body: JSON.stringify({
         houseId: houseId,
         inspector: inspector,
         ownerName: ownerName,
@@ -405,8 +405,8 @@ fetch(gasUrl, {
         note: note,
         lat: pos.coords.latitude,
         lng: pos.coords.longitude
-    })
-});
+               })
+          });
 // --- 修正箇所：ここまで ---
 
 // 既存のFirestore保存処理（db.collection("house_logs").add...）はそのまま残してOK
