@@ -187,12 +187,12 @@
 
         <hr style="border: 0; border-top: 1px solid #eee; margin: 15px 0;">
 
-        <button class="btn-green" onclick="window.open('YOUR_PAMPHLET_URL', '_blank')">
+        <button class="btn-green" onclick="logAndOpen('パンフレット閲覧', 'YOUR_PAMPHLET_URL')">
             <span class="khmer-text" style="font-size: 1.1em; color:white;">ខិត្តប័ណ្ណ</span>
             <span class="eng-text" style="color:white;">Read Pamphlet</span>
             <span class="jap-text" style="color:#e8f5e9;">パンフレットを見る</span>
         </button>
-        <button class="btn-green" onclick="window.open('YOUR_VIDEO_URL', '_blank')">
+        <button class="btn-green" onclick="logAndOpen('動画視聴', 'YOUR_VIDEO_URL')">
             <span class="khmer-text" style="font-size: 1.1em; color:white;">វីដេអូ</span>
             <span class="eng-text" style="color:white;">Watch Video</span>
             <span class="jap-text" style="color:#e8f5e9;">動画を見る</span>
@@ -310,6 +310,22 @@
         loadHistory();
     }
 
+    // ----------------------------------------------------
+    // 追加箇所：住民のボタンクリックを記録して別タブで開く関数
+    // ----------------------------------------------------
+    function logAndOpen(actionType, targetUrl) {
+        const gasUrl = "https://script.google.com/macros/s/AKfycbyPIhxqIx_M9YmYtdgFWcxJVqE7m93UdCHQIG5zkZJ4d13kTLndkYxoDWaLVeMAZyKDHg/exec";
+        
+        // GASに「どの家が」「何を読んだか」を送信するURLを作る
+        const logUrl = `${gasUrl}?houseId=${encodeURIComponent(houseId)}&action=${encodeURIComponent(actionType)}&url=${encodeURIComponent(targetUrl)}`;
+        
+        // 記録用URLを裏側でこっそり呼び出す（スプレッドシートに書き込まれる）
+        fetch(logUrl, { mode: 'no-cors' });
+        
+        // 住民の画面では、本来見たいURLを別タブで開く
+        window.open(targetUrl, '_blank');
+    }
+
     // Firestoreからデータを取得して表示
     function loadHistory() {
         const list = document.getElementById('history-list');
@@ -376,9 +392,6 @@
         navigator.geolocation.getCurrentPosition(pos => {
             btn.innerText = "⏳ クラウドへ保存中...";
             
-            // ----------------------------------------------------
-            // 修正箇所：GASへの送信処理（URLSearchParamsを使う形式）
-            // ----------------------------------------------------
             const gasUrl = "https://script.google.com/macros/s/AKfycbyPIhxqIx_M9YmYtdgFWcxJVqE7m93UdCHQIG5zkZJ4d13kTLndkYxoDWaLVeMAZyKDHg/exec";
 
             const params = new URLSearchParams();
@@ -396,7 +409,6 @@
                 mode: "no-cors",
                 body: params
             });
-            // ----------------------------------------------------
 
             // 既存のFirestore保存処理
             db.collection("house_logs").add({
