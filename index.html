@@ -132,7 +132,7 @@
       font-size: 0.9em;
     }
 
-    #map {
+    #map, #all-map {
       width: 100%;
       height: 350px;
       border-radius: 12px;
@@ -145,13 +145,13 @@
       display: none;
     }
 
-    .history-item {
+    .history-item, .all-house-item {
       border-bottom: 1px solid #eee;
       padding: 15px 0;
       font-size: 0.9em;
     }
 
-    .history-item strong {
+    .history-item strong, .all-house-item strong {
       color: var(--main-blue);
       font-size: 1.1em;
     }
@@ -177,7 +177,7 @@
       <span class="eng-text">Tonle Sap Project</span>
       <span class="jap-text">仙台二華課題研究　雨水グループ　トンレサップ湖浄化プロジェクト</span>
       
-            <div style="display: flex; flex-direction: column; align-items: center; gap: 10px; margin: 15px auto; max-width: 320px;">
+      <div style="display: flex; flex-direction: column; align-items: center; gap: 10px; margin: 15px auto; max-width: 320px;">
         <div class="house-id-badge" style="display: flex; align-items: center; gap: 8px; margin: 0; padding: 8px 16px;">
           <span style="font-size: 1.1em;">House ID:</span>
           <input type="text" id="input-house-id" value="Loading..." style="margin: 0; padding: 2px 4px; width: 110px; font-weight: bold; text-align: center; border: 1px solid #a3e4d7; border-radius: 6px; height: 32px; background-color: #e8f5e9; color: var(--main-green); font-size: 1.1em;">
@@ -225,7 +225,8 @@
         <h3 style="margin-top: 0; color: var(--main-blue);">📋 調査員メニュー</h3>
         <p style="font-size: 0.9em; color: #666;">対象世帯の記録と履歴の確認を行います</p>
         <button class="btn-blue" onclick="showView('view-form')">✍️ 新規調査記録</button>
-        <button class="btn-outline" onclick="showView('view-history')">🗺️ 過去の履歴と地図を見る</button>
+        <button class="btn-outline" onclick="showView('view-history')">🏠 この家（選択中）の履歴と地図</button>
+        <button class="btn-outline" onclick="showView('view-all-houses')" style="border-color: var(--main-blue); color: var(--main-blue);">🗺️ 全世帯の一覧とマップ表示</button>
         <button class="btn-outline" onclick="location.reload()" style="margin-top: 20px; border-color: #ffcccc; color: #d32f2f;">🚪 ログアウト</button>
       </div>
     </div>
@@ -258,9 +259,17 @@
     </div>
 
     <div id="view-history" class="hidden">
-      <h3 style="color: var(--main-blue);">🗺️ 位置情報と調査履歴</h3>
+      <h3 style="color: var(--main-blue);">🏠 選択中の家の調査履歴</h3>
       <div id="map"></div>
       <div id="history-list" style="margin-top: 20px;"></div>
+      <button class="btn-outline" onclick="showView('view-researcher')" style="margin-top: 20px;">戻る</button>
+    </div>
+
+    <div id="view-all-houses" class="hidden">
+      <h3 style="color: var(--main-blue);">🗺️ 全世帯マップ & 最新情報一覧</h3>
+      <p style="font-size: 0.85em; color: #666; margin: 0;">登録されている全ホームIDの最新1件を表示しています。</p>
+      <div id="all-map"></div>
+      <div id="all-house-list" style="margin-top: 20px;"></div>
       <button class="btn-outline" onclick="showView('view-researcher')" style="margin-top: 20px;">戻る</button>
     </div>
 
@@ -271,7 +280,6 @@
   </div>
 
   <script>
-    // Firebaseの設定
     const firebaseConfig = {
       apiKey: "AIzaSyAo6bkTvrBpu6hnXSf9lXRGGva98XTT5GQ",
       authDomain: "tonle-sap-housetracking-system.firebaseapp.com",
@@ -282,29 +290,26 @@
       measurementId: "G-27MLCJEHEM"
     };
 
-    // Firebaseの初期化
     firebase.initializeApp(firebaseConfig);
     const db = firebase.firestore();
 
-    // URLから家IDを取得（QRコードの ?id=H-01 の部分）
     const urlParams = new URLSearchParams(window.location.search);
-    // 【修正】houseIdを書き換え可能な変数(let)に変更
     let houseId = urlParams.get('id') || 'TEST-HOUSE';
-    
-    // 画面の入力欄に初期のHouse IDを表示する
     document.getElementById('input-house-id').value = houseId;
 
     let map;
-    let markersGroup; // 地図のピンをリセットするためのグループ
+    let markersGroup;
+    
+    let allMap;
+    let allMarkersGroup;
 
-    // 画面切り替え関数
     function showView(id) {
         document.querySelectorAll('.container > div[id^="view-"]').forEach(v => v.classList.add('hidden'));
         document.getElementById(id).classList.remove('hidden');
         if(id === 'view-history') initMap();
+        if(id === 'view-all-houses') initAllMap(); // 新機能画面切り替え時
     }
 
-    // 調査員ログイン（簡易パスワード）
     function checkAuth() {
         const pass = prompt("調査員用パスワードを入力してください:");
         if(pass === "RJSS") {
@@ -314,60 +319,58 @@
         }
     }
 
-    // 【追加】ユーザーが画面上でIDを手動変更したときに動く関数
     function changeHouseIdHandy() {
         const newId = document.getElementById('input-house-id').value.trim();
         if (!newId) {
             alert("IDを空欄にすることはできません。");
-            document.getElementById('input-house-id').value = houseId; // 元に戻す
+            document.getElementById('input-house-id').value = houseId;
             return;
         }
         
-        // アプリ内の変数を新しいIDに書き換え
         houseId = newId;
         alert(`House ID を 「${houseId}」 に変更しました！`);
         
-        // もし現在「過去の履歴と地図を見る」画面が開いているなら、即座にFirestoreから新しいデータを再読み込みする
-        const historyView = document.getElementById('view-history');
-        if (!historyView.classList.contains('hidden')) {
+        if (!document.getElementById('view-history').classList.contains('hidden')) {
             loadHistory();
         }
     }
 
-    // 地図の初期化と履歴読み込み
+    // 特定の家用マップ
     function initMap() {
         if(!map) {
-            // トンレサップ湖付近の座標をデフォルトに
             map = L.map('map').setView([12.5, 104.1], 10);
             L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
                 attribution: '&copy; OpenStreetMap contributors'
             }).addTo(map);
-            
-            // ピンを管理するグループを作成して地図に追加
             markersGroup = L.layerGroup().addTo(map);
         }
         loadHistory();
     }
 
-    // 住民のボタンクリックを記録して別タブで開く関数
+    // 【新機能】全世帯用マップの初期化
+    function initAllMap() {
+        if(!allMap) {
+            allMap = L.map('all-map').setView([12.5, 104.1], 10);
+            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                attribution: '&copy; OpenStreetMap contributors'
+            }).addTo(allMap);
+            allMarkersGroup = L.layerGroup().addTo(allMap);
+        }
+        loadAllHousesData();
+    }
+
     function logAndOpen(actionType, targetUrl) {
         const gasUrl = "https://script.google.com/macros/s/AKfycbyPIhxqIx_M9YmYtdgFWcxJVqE7m93UdCHQIG5zkZJ4d13kTLndkYxoDWaLVeMAZyKDHg/exec";
-        
         const logUrl = `${gasUrl}?houseId=${encodeURIComponent(houseId)}&action=${encodeURIComponent(actionType)}&url=${encodeURIComponent(targetUrl)}`;
-        
         fetch(logUrl, { mode: 'no-cors' });
         window.open(targetUrl, '_blank');
     }
 
-    // Firestoreからデータを取得して表示
+    // 特定の家一軒の履歴読み込み
     function loadHistory() {
         const list = document.getElementById('history-list');
         list.innerHTML = "<p style='text-align:center;'>データを読み込み中...</p>";
-        
-        // 前の家のピンが地図に残っている場合があるので、一旦全部クリアする
-        if (markersGroup) {
-            markersGroup.clearLayers();
-        }
+        if (markersGroup) markersGroup.clearLayers();
         
         db.collection("house_logs")
           .where("houseId", "==", houseId)
@@ -385,12 +388,9 @@
             snap.forEach(doc => {
                 const d = doc.data();
                 const date = d.timestamp ? d.timestamp.toDate().toLocaleString('ja-JP') : '日時不明';
-                
-                // 地図グループにピンを立てる
                 L.marker([d.lat, d.lng]).addTo(markersGroup).bindPopup(`<b>${date}</b><br>家主: ${d.ownerName}`);
                 coords.push([d.lat, d.lng]);
 
-                // 履歴リストの作成
                 const item = document.createElement('div');
                 item.className = 'history-item';
                 item.innerHTML = `
@@ -401,13 +401,92 @@
                 `;
                 list.appendChild(item);
             });
-            
-            // 全てのピンが収まるように地図をズーム
             if(coords.length > 0) map.fitBounds(coords, {padding: [30, 30]});
         }).catch(error => {
-            console.error("Error getting documents: ", error);
-            list.innerHTML = "<p style='color:red;'>データの読み込みに失敗しました。オフラインの可能性があります。</p>";
+            list.innerHTML = "<p style='color:red;'>データの読み込みに失敗しました。</p>";
         });
+    }
+
+    // 【新機能】全世帯の最新データをFirestoreから読み込む処理
+    function loadAllHousesData() {
+        const list = document.getElementById('all-house-list');
+        list.innerHTML = "<p style='text-align:center;'>全世帯データを取得中...</p>";
+        if (allMarkersGroup) allMarkersGroup.clearLayers();
+
+        // タイムスタンプの降順でログを全件取得し、フロント側で家ごとに最新の1件を抽出する
+        db.collection("house_logs")
+          .orderBy("timestamp", "desc")
+          .get()
+          .then(snap => {
+            list.innerHTML = "";
+            let coords = [];
+            
+            if(snap.empty) {
+                list.innerHTML = "<p style='text-align:center; color:#666;'>登録されている家がありません。</p>";
+                return;
+            }
+
+            // 家ごとのユニークな最新データを保持するマップオブジェクト
+            const latestHouses = {};
+
+            snap.forEach(doc => {
+                const d = doc.data();
+                // まだこのHouseIDが登録されていなければ、それが「最新の1件」になる
+                if (!latestHouses[d.houseId]) {
+                    latestHouses[d.houseId] = d;
+                }
+            });
+
+            // 抽出した各家の最新データを画面とマップに出力
+            // House ID順に見やすく並び替える
+            const sortedIds = Object.keys(latestHouses).sort();
+
+            sortedIds.forEach(id => {
+                const d = latestHouses[id];
+                const date = d.timestamp ? d.timestamp.toDate().toLocaleString('ja-JP') : '日時不明';
+
+                // マップにピンを追加（ポップアップにIDと最新の家主を表示）
+                L.marker([d.lat, d.lng]).addTo(allMarkersGroup).bindPopup(`<b>ID: ${d.houseId}</b><br>最新家主: ${d.ownerName}<br>日時: ${date}`);
+                coords.push([d.lat, d.lng]);
+
+                // 一覧リスト用のHTMLを生成
+                const item = document.createElement('div');
+                item.className = 'all-house-item';
+                // このリスト項目をタップすると、その場でその家を「選択中」にして単体詳細画面に飛べる便利機能付き！
+                item.setAttribute("onclick", `selectAndGo('${d.houseId}')`);
+                item.style.cursor = "pointer";
+                item.style.backgroundColor = "#fafafa";
+                item.style.margin = "6px 0";
+                item.style.padding = "10px";
+                item.style.borderRadius = "6px";
+                item.style.borderLeft = "4px solid var(--main-blue)";
+                
+                item.innerHTML = `
+                    <div style="display:flex; justify-content:between; align-items:center;">
+                      <strong>🏠 ID: ${d.houseId}</strong>
+                      <span style="font-size:0.8em; color:#888; margin-left:auto;">最終更新: ${date.split(' ')[0]}</span>
+                    </div>
+                    最新の家主: <b>${d.ownerName}</b> (${d.familySize || '-'}人)<br>
+                    雨樋: ${d.hasGutter} | メモ: ${d.note || 'なし'}
+                    <div style="font-size:0.75em; color:var(--main-blue); text-align:right; margin-top:4px;">詳細・過去履歴を見る ➔</div>
+                `;
+                list.appendChild(item);
+            });
+
+            // 全員のピンが収まるように全ビューマップのズームを調整
+            if(coords.length > 0) allMap.fitBounds(coords, {padding: [30, 30]});
+
+        }).catch(error => {
+            console.error("Error loading all houses: ", error);
+            list.innerHTML = "<p style='color:red;'>全世帯データの読み込みに失敗しました。</p>";
+        });
+    }
+
+    // リストから家をタップしたときに自動でIDを切り替えて個別詳細にジャンプする関数
+    function selectAndGo(targetId) {
+        houseId = targetId;
+        document.getElementById('input-house-id').value = targetId;
+        showView('view-history');
     }
 
     // データ保存処理
@@ -426,7 +505,6 @@
         btn.disabled = true;
         btn.innerText = "⏳ 位置情報を取得中...";
 
-        // GPSで現在地を取得
         navigator.geolocation.getCurrentPosition(pos => {
             btn.innerText = "⏳ クラウドへ保存中...";
             
@@ -448,7 +526,6 @@
                 body: params
             });
 
-            // 既存のFirestore保存処理
             db.collection("house_logs").add({
                 houseId: houseId,
                 inspector: inspector,
