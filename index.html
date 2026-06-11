@@ -49,10 +49,10 @@
     .house-id-badge {
       background: #e8f5e9;
       color: var(--main-green);
-      padding: 6px 18px;
+      padding: 6px 14px;
       border-radius: 20px;
       font-weight: bold;
-      font-size: 1.2em;
+      font-size: 1.1em;
       display: inline-block;
       margin-top: 10px;
     }
@@ -176,7 +176,12 @@
       <span class="khmer-text">គម្រោងទន្លេសាប</span>
       <span class="eng-text">Tonle Sap Project</span>
       <span class="jap-text">仙台二華課題研究　雨水グループ　トンレサップ湖浄化プロジェクト</span>
-      <div id="display-house-id" class="house-id-badge">House ID: Loading...</div>
+      
+      <div class="house-id-badge" style="display: flex; align-items: center; gap: 6px; justify-content: center; margin: 10px auto; max-width: 300px;">
+        <span>ID:</span>
+        <input type="text" id="input-house-id" value="Loading..." style="margin: 0; padding: 4px 6px; width: 100px; font-weight: bold; text-align: center; border: 1px solid #ccc; border-radius: 4px; height: 30px;">
+        <button onclick="changeHouseIdHandy()" style="width: auto; margin: 0; padding: 0 12px; font-size: 0.8em; background: var(--main-green); color: white; height: 30px; line-height: 30px;">変更</button>
+      </div>
     </div>
 
     <div id="view-main">
@@ -276,10 +281,14 @@
 
     // URLから家IDを取得（QRコードの ?id=H-01 の部分）
     const urlParams = new URLSearchParams(window.location.search);
-    const houseId = urlParams.get('id') || 'TEST-HOUSE';
-    document.getElementById('display-house-id').innerText = `House ID: ${houseId}`;
+    // 【修正】houseIdを書き換え可能な変数(let)に変更
+    let houseId = urlParams.get('id') || 'TEST-HOUSE';
+    
+    // 画面の入力欄に初期のHouse IDを表示する
+    document.getElementById('input-house-id').value = houseId;
 
     let map;
+    let markersGroup; // 地図のピンをリセットするためのグループ
 
     // 画面切り替え関数
     function showView(id) {
@@ -298,6 +307,26 @@
         }
     }
 
+    // 【追加】ユーザーが画面上でIDを手動変更したときに動く関数
+    function changeHouseIdHandy() {
+        const newId = document.getElementById('input-house-id').value.trim();
+        if (!newId) {
+            alert("IDを空欄にすることはできません。");
+            document.getElementById('input-house-id').value = houseId; // 元に戻す
+            return;
+        }
+        
+        // アプリ内の変数を新しいIDに書き換え
+        houseId = newId;
+        alert(`House ID を 「${houseId}」 に変更しました！`);
+        
+        // もし現在「過去の履歴と地図を見る」画面が開いているなら、即座にFirestoreから新しいデータを再読み込みする
+        const historyView = document.getElementById('view-history');
+        if (!historyView.classList.contains('hidden')) {
+            loadHistory();
+        }
+    }
+
     // 地図の初期化と履歴読み込み
     function initMap() {
         if(!map) {
@@ -306,23 +335,20 @@
             L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
                 attribution: '&copy; OpenStreetMap contributors'
             }).addTo(map);
+            
+            // ピンを管理するグループを作成して地図に追加
+            markersGroup = L.layerGroup().addTo(map);
         }
         loadHistory();
     }
 
-    // ----------------------------------------------------
-    // 追加箇所：住民のボタンクリックを記録して別タブで開く関数
-    // ----------------------------------------------------
+    // 住民のボタンクリックを記録して別タブで開く関数
     function logAndOpen(actionType, targetUrl) {
         const gasUrl = "https://script.google.com/macros/s/AKfycbyPIhxqIx_M9YmYtdgFWcxJVqE7m93UdCHQIG5zkZJ4d13kTLndkYxoDWaLVeMAZyKDHg/exec";
         
-        // GASに「どの家が」「何を読んだか」を送信するURLを作る
         const logUrl = `${gasUrl}?houseId=${encodeURIComponent(houseId)}&action=${encodeURIComponent(actionType)}&url=${encodeURIComponent(targetUrl)}`;
         
-        // 記録用URLを裏側でこっそり呼び出す（スプレッドシートに書き込まれる）
         fetch(logUrl, { mode: 'no-cors' });
-        
-        // 住民の画面では、本来見たいURLを別タブで開く
         window.open(targetUrl, '_blank');
     }
 
@@ -330,6 +356,11 @@
     function loadHistory() {
         const list = document.getElementById('history-list');
         list.innerHTML = "<p style='text-align:center;'>データを読み込み中...</p>";
+        
+        // 前の家のピンが地図に残っている場合があるので、一旦全部クリアする
+        if (markersGroup) {
+            markersGroup.clearLayers();
+        }
         
         db.collection("house_logs")
           .where("houseId", "==", houseId)
@@ -340,7 +371,7 @@
             let coords = [];
             
             if(snap.empty) {
-                list.innerHTML = "<p style='text-align:center; color:#666;'>まだこの家の記録はありません。</p>";
+                list.innerHTML = `<p style='text-align:center; color:#666;'>「${houseId}」の記録はまだありません。</p>`;
                 return;
             }
 
@@ -348,8 +379,8 @@
                 const d = doc.data();
                 const date = d.timestamp ? d.timestamp.toDate().toLocaleString('ja-JP') : '日時不明';
                 
-                // 地図にピンを立てる
-                L.marker([d.lat, d.lng]).addTo(map).bindPopup(`<b>${date}</b><br>家主: ${d.ownerName}`);
+                // 地図グループにピンを立てる
+                L.marker([d.lat, d.lng]).addTo(markersGroup).bindPopup(`<b>${date}</b><br>家主: ${d.ownerName}`);
                 coords.push([d.lat, d.lng]);
 
                 // 履歴リストの作成
@@ -423,14 +454,13 @@
                 timestamp: firebase.firestore.FieldValue.serverTimestamp()
             }).then(() => {
                 alert("データの保存が完了しました！");
-                // フォームをリセットしてメニューに戻る
                 document.getElementById('ownerName').value = '';
                 document.getElementById('familySize').value = '';
                 document.getElementById('notes').value = '';
                 document.getElementById('hasGutter').selectedIndex = 0;
                 btn.disabled = false;
                 btn.innerText = "💾 現在地を取得して保存";
-                showView('view-history'); // 保存後は履歴画面へ
+                showView('view-history'); 
             }).catch(error => {
                 alert("保存エラー: " + error.message);
                 btn.disabled = false;
