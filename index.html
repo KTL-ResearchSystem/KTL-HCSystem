@@ -149,7 +149,6 @@
       z-index: 1;
     }
 
-    /* 【ココを修正】消すルールが他のデザインに負けないよう最優先(!important)に */
     .hidden {
       display: none !important;
     }
@@ -475,7 +474,25 @@
         });
     }
 
+    // 【今回修正】住民登録データをクラウド、端末、そしてGASへ送信する関数
     function saveRegistrationData(name, size, lat, lng) {
+        const gasUrl = "https://script.google.com/macros/s/AKfycbyPIhxqIx_M9YmYtdgFWcxJVqE7m93UdCHQIG5zkZJ4d13kTLndkYxoDWaLVeMAZyKDHg/exec";
+        
+        // GAS配信用にパラメータを作成
+        const params = new URLSearchParams();
+        params.append('houseId', houseId);
+        params.append('inspector', "住民自身 (Resident)");
+        params.append('ownerName', name);
+        params.append('familySize', size);
+        params.append('hasGutter', "未確認");
+        params.append('note', "【新規マイホーム登録地点】");
+        params.append('lat', lat !== null ? lat : "");
+        params.append('lng', lng !== null ? lng : "");
+        
+        // GASへ非同期でバックアップ送信を行う
+        fetch(gasUrl, { method: "POST", mode: "no-cors", body: params });
+
+        // Firestore用のオブジェクト
         const logData = {
             houseId: houseId,
             inspector: "住民自身 (Resident)",
@@ -491,6 +508,7 @@
             logData.lng = lng;
         }
 
+        // Firestoreへ保存
         db.collection("house_logs").add(logData).then(() => {
             localStorage.setItem('my_saved_house_id', houseId);
             alert(`登録完了！あなた専用のIDは [ ${houseId} ] です。\nRegistration complete! Your ID is ${houseId}.`);
