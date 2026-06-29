@@ -6,12 +6,15 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Tonle Sap Project</title>
 
+  <!-- Firebase (Compact SDK) -->
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
 
+  <!-- Leaflet (Map) -->
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css" />
   <script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"></script>
 
+  <!-- QR Code Generator ライブラリ（共有用） -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
 
   <style>
@@ -215,6 +218,7 @@
       <span class="eng-text">Tonle Sap Project</span>
       <span class="jap-text">仙台二華課題研究　雨水グループ　トンレサップ湖浄化プロジェクト</span>
       
+      <!-- House ID 変更エリア（住民が登録済みの場合は表示される） -->
       <div id="id-manage-area" class="hidden" style="display: flex; flex-direction: column; align-items: center; gap: 10px; margin: 15px auto; max-width: 320px;">
         <div class="house-id-badge" style="display: flex; align-items: center; gap: 8px; margin: 0; padding: 8px 16px;">
           <span style="font-size: 1.1em;">House ID:</span>
@@ -228,13 +232,14 @@
       </div>
     </div>
 
-    <div id="view-register" class="hidden">
+    <!-- 画面0: マイホーム登録画面（初回訪問者用・完全多言語版） -->
+    <div id="view-register" class="app-view hidden">
       <div class="menu-card" style="border-left: 8px solid var(--main-purple)">
         <span class="khmer-text" style="color: var(--main-purple);">ចុះឈ្មោះផ្ទះរបស់អ្នក</span>
         <span class="eng-text" style="font-weight: bold; color: var(--main-purple);">Register Your Home</span>
         <span class="jap-text" style="font-weight: bold; color: var(--main-purple);">【初回のみ】マイホーム登録</span>
         <p style="font-size: 0.8em; color:#666; margin-top:5px;">
-          <span style="display:block;">បន្ទាប់ពីចុះឈ្មោះរួច លេខសម្គាល់ផ្ទះ (House ID) ផ្ទាល់ខ្លួនជារបស់អ្នកនឹងត្រូវបង្កើតឡើងដោយស្វ័យប្រវត្តិ។</span>
+          <span style="display:block;">បន្ទាប់ពីចុះឈ្មោះរួច លេខសម្គាល់ផ្ទះ (House ID) ផ្ទាល់ខ្លួនជារបស់អ្នកនឹងត្រូវបង្កើតឡើងដោយស្វ័យប្រវត្តិ。</span>
           <span style="display:block; margin-top:2px;">After registering, your own unique House ID will be automatically generated.</span>
           <span style="display:block; color:#999; margin-top:2px;">※登録するとあなた専用のHouse ID番号が自動発行されます。</span>
         </p>
@@ -263,7 +268,8 @@
       </div>
     </div>
 
-    <div id="view-main" class="hidden">
+    <!-- 画面1: メインメニュー（住民用・完全多言語版） -->
+    <div id="view-main" class="app-view hidden">
       <div class="menu-card" style="border-left: 8px solid var(--main-green)">
         <span class="khmer-text">សម្រាប់អ្នកភូមិ</span>
         <span class="eng-text" style="font-weight: bold;">For Residents</span>
@@ -283,6 +289,7 @@
         </button>
       </div>
 
+      <!-- アプリ内共有QRコードボタン -->
       <div style="margin-top: 20px;">
         <button class="btn-purple" onclick="showShareQR()" style="padding: 12px;">
             <span class="khmer-text" style="font-size: 0.95em; color: white;">ចែករំលែកកម្មវិធីនេះ</span>
@@ -300,18 +307,21 @@
       </div>
     </div>
 
-    <div id="view-researcher" class="hidden">
+    <!-- 画面2: 調査員メニュー -->
+    <div id="view-researcher" class="app-view hidden">
       <div class="menu-card" style="border-left: 8px solid var(--main-blue)">
         <h3 style="margin-top: 0; color: var(--main-blue);">📋 調査員メニュー</h3>
         <p style="font-size: 0.9em; color: #666;">対象世帯の記録と履歴の確認を行います</p>
         <button class="btn-blue" onclick="showView('view-form')">✍️ 新規調査記録</button>
         <button class="btn-outline" onclick="showView('view-history')">🏠 選択中ハウスの履歴・マップ</button>
+        <!-- 管理者ページボタン -->
         <button class="btn-purple" onclick="showView('view-admin')" style="margin-top: 15px;">⚙️ 管理者ダッシュボード（全データ）</button>
         <button class="btn-outline" onclick="location.reload()" style="margin-top: 20px; border-color: #ffcccc; color: #d32f2f;">🚪 ログアウト</button>
       </div>
     </div>
 
-    <div id="view-form" class="hidden">
+    <!-- 画面3: 新規調査記録フォーム -->
+    <div id="view-form" class="app-view hidden">
       <h3 style="color: var(--main-blue);">✍️ 新規調査記録</h3>
       <label>調査員名</label>
       <input type="text" id="inspector" placeholder="例: Kunisealiner880">
@@ -332,16 +342,19 @@
       <button class="btn-outline" onclick="showView('view-researcher')">戻る</button>
     </div>
 
-    <div id="view-history" class="hidden">
+    <!-- 画面4: 特定の一軒の履歴画面 -->
+    <div id="view-history" class="app-view hidden">
       <h3 style="color: var(--main-blue);">🏠 選択中の家の調査履歴</h3>
       <div id="map"></div>
       <div id="history-list" style="margin-top: 20px;"></div>
       <button class="btn-outline" onclick="showView('view-researcher')" style="margin-top: 20px;">戻る</button>
     </div>
 
-    <div id="view-admin" class="hidden">
+    <!-- 画面5: 管理者ダッシュボード画面（全件データ＆全体マップ） -->
+    <div id="view-admin" class="app-view hidden">
       <h3 style="color: var(--main-purple);">⚙️ 管理者ダッシュボード</h3>
       
+      <!-- 特定IDのクイック履歴検索 -->
       <div style="background: #f9f9f9; padding: 12px; border-radius: 8px; margin-bottom: 15px; border: 1px solid #ddd;">
         <label style="font-size:0.85em;">🔍 個別ハウスID履歴検索:</label>
         <div style="display:flex; gap:5px; margin-top:5px;">
@@ -366,13 +379,15 @@
             </tr>
           </thead>
           <tbody id="admin-table-body">
-            </tbody>
+            <!-- JSで動的に生成 -->
+          </tbody>
         </table>
       </div>
 
       <button class="btn-outline" onclick="showView('view-researcher')" style="margin-top: 20px;">戻る</button>
     </div>
 
+    <!-- QRコードポップアップモーダル -->
     <div id="qr-modal" class="modal hidden" onclick="closeShareQR()">
       <div class="modal-content" onclick="event.stopPropagation()">
         <h4 style="margin-top:0;">📱 近くの人に共有 / Share App</h4>
@@ -508,9 +523,9 @@
         });
     }
 
-    // 画面切り替え管理
+    // 画面切り替え管理（バグ修正版：ポップアップを誤作動させないためにクラス名を厳密化）
     function showView(id) {
-        document.querySelectorAll('.container > div[id^="view-"]').forEach(v => v.classList.add('hidden'));
+        document.querySelectorAll('.container > .app-view').forEach(v => v.classList.add('hidden'));
         document.getElementById(id).classList.remove('hidden');
         if(id === 'view-history') initMap();
         if(id === 'view-admin') initAdminDashboard(); // 管理者ページ起動時
