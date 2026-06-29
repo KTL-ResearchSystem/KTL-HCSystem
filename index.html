@@ -233,14 +233,26 @@
         <span class="khmer-text" style="color: var(--main-purple);">ចុះឈ្មោះផ្ទះរបស់អ្នក</span>
         <span class="eng-text" style="font-weight: bold; color: var(--main-purple);">Register Your Home</span>
         <span class="jap-text" style="font-weight: bold; color: var(--main-purple);">【初回のみ】マイホーム登録</span>
-        <p style="font-size: 0.8em; color:#666; margin-top:5px;">登録するとあなた専用のHouse ID番号が自動発行されます。</p>
+        <p style="font-size: 0.8em; color:#666; margin-top:5px;">
+          <span style="display:block;">បន្ទាប់ពីចុះឈ្មោះរួច លេខសម្គាល់ផ្ទះ (House ID) ផ្ទាល់ខ្លួនជារបស់អ្នកនឹងត្រូវបង្កើតឡើងដោយស្វ័យប្រវត្តិ។</span>
+          <span style="display:block; margin-top:2px;">After registering, your own unique House ID will be automatically generated.</span>
+          <span style="display:block; color:#999; margin-top:2px;">※登録するとあなた専用のHouse ID番号が自動発行されます。</span>
+        </p>
 
         <hr style="border: 0; border-top: 1px solid #eee; margin: 15px 0;">
 
-        <label>ឈ្មោះរបស់អ្នក / Your Name / お名前</label>
+        <label>
+          <span class="khmer-text" style="font-size:1em; margin:0;">ឈ្មោះរបស់អ្នក (ជាអក្សរឡាតាំង)</span>
+          <span class="eng-text" style="font-size:0.85em; margin:0;">Your Name (Roman letters)</span>
+          <span class="jap-text" style="font-size:0.7em; margin:0;">お名前（ローマ字）</span>
+        </label>
         <input type="text" id="reg-ownerName" placeholder="Example: Sok San">
 
-        <label>ចំនួនសមាជិកគ្រួសារ / Family Size / 世帯人数</label>
+        <label style="margin-top:10px; display:block;">
+          <span class="khmer-text" style="font-size:1em; margin:0;">ចំនួនសមាជិកគ្រួសារ</span>
+          <span class="eng-text" style="font-size:0.85em; margin:0;">Family Size</span>
+          <span class="jap-text" style="font-size:0.7em; margin:0;">世帯人数</span>
+        </label>
         <input type="number" id="reg-familySize" placeholder="Example: 5" min="1">
 
         <button class="btn-purple" id="reg-btn" onclick="registerMyHome()">
@@ -260,12 +272,12 @@
         <hr style="border: 0; border-top: 1px solid #eee; margin: 15px 0;">
 
         <button class="btn-green" onclick="logAndOpen('パンフレット閲覧', 'YOUR_PAMPHLET_URL')">
-            <span class="khmer-text" style="font-size: 1.1em; color:white;">ខិត្តប័ណ្ណ</span>
+            <span class="khmer-text" style="font-size: 1.1em; color:white;">មើលខិត្តប័ណ្ណ</span>
             <span class="eng-text" style="color:white;">Read Pamphlet</span>
             <span class="jap-text" style="color:#e8f5e9;">パンフレットを見る</span>
         </button>
         <button class="btn-green" onclick="logAndOpen('動画視聴', 'YOUR_VIDEO_URL')">
-            <span class="khmer-text" style="font-size: 1.1em; color:white;">វីដេអូ</span>
+            <span class="khmer-text" style="font-size: 1.1em; color:white;">មើលវីដេអូ</span>
             <span class="eng-text" style="color:white;">Watch Video</span>
             <span class="jap-text" style="color:#e8f5e9;">動画を見る</span>
         </button>
@@ -281,7 +293,7 @@
 
       <div style="margin-top: 30px;">
         <button class="btn-outline" onclick="checkAuth()">
-            <span class="khmer-text" style="font-size: 1em;">អ្នកស្រាវជ្រាវ</span>
+            <span class="khmer-text" style="font-size: 1em;">សម្រាប់អ្នកស្រាវជ្រាវ (ឡូកអ៊ីន)</span>
             <span class="eng-text">Researcher Login</span>
             <span class="jap-text">調査員用ログイン</span>
         </button>
@@ -423,7 +435,7 @@
         showView('view-main');
     }
 
-    // 【新機能】住民自身によるマイホーム連番登録処理
+    // 住民自身によるマイホーム連番登録処理
     function registerMyHome() {
         const ownerName = document.getElementById('reg-ownerName').value.trim();
         const familySize = document.getElementById('reg-familySize').value.trim();
@@ -457,7 +469,7 @@
             navigator.geolocation.getCurrentPosition((pos) => {
                 saveRegistrationData(ownerName, familySize, pos.coords.latitude, pos.coords.longitude);
             }, (error) => {
-                // 位置情報が拒否された場合は、デフォルト座標（0, 0などではなく空）で進む
+                // 位置情報が拒否された場合は、デフォルト座標（null）で進む
                 saveRegistrationData(ownerName, familySize, null, null);
             }, { timeout: 5000 });
 
@@ -582,7 +594,7 @@
         }).catch(err => { list.innerHTML = "<p style='color:red;'>データ取得失敗</p>"; });
     }
 
-    // 【新機能】管理者ダッシュボードの初期化
+    // 管理者ダッシュボードの初期化
     function initAdminDashboard() {
         if(!adminMap) {
             adminMap = L.map('admin-map').setView([12.5, 104.1], 9);
@@ -592,7 +604,7 @@
         loadAdminData();
     }
 
-    // 【新機能】全データを多角的にロードしてテーブルとマップに表示する
+    // 全データを多角的にロードしてテーブルとマップに表示する
     function loadAdminData() {
         const tbody = document.getElementById('admin-table-body');
         tbody.innerHTML = "<tr><td colspan='5' style='text-align:center;'>読込中...</td></tr>";
@@ -663,7 +675,7 @@
         adminJumpToHouse(searchId);
     }
 
-    // 【新機能】共有用QRコードポップアップ表示
+    // 共有用QRコードポップアップ表示
     function showShareQR() {
         // 現在のブラウザURL（共通リンク）を取得
         const currentUrl = window.location.origin + window.location.pathname; 
