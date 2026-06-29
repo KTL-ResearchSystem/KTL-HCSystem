@@ -6,15 +6,12 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Tonle Sap Project</title>
 
-  <!-- Firebase (Compact SDK) -->
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
 
-  <!-- Leaflet (Map) -->
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css" />
   <script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"></script>
 
-  <!-- QR Code Generator ライブラリ（共有用） -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
 
   <style>
@@ -152,8 +149,9 @@
       z-index: 1;
     }
 
+    /* 【ココを修正】消すルールが他のデザインに負けないよう最優先(!important)に */
     .hidden {
-      display: none;
+      display: none !important;
     }
 
     .history-item {
@@ -218,7 +216,6 @@
       <span class="eng-text">Tonle Sap Project</span>
       <span class="jap-text">仙台二華課題研究　雨水グループ　トンレサップ湖浄化プロジェクト</span>
       
-      <!-- House ID 変更エリア（住民が登録済みの場合は表示される） -->
       <div id="id-manage-area" class="hidden" style="display: flex; flex-direction: column; align-items: center; gap: 10px; margin: 15px auto; max-width: 320px;">
         <div class="house-id-badge" style="display: flex; align-items: center; gap: 8px; margin: 0; padding: 8px 16px;">
           <span style="font-size: 1.1em;">House ID:</span>
@@ -232,14 +229,13 @@
       </div>
     </div>
 
-    <!-- 画面0: マイホーム登録画面（初回訪問者用・完全多言語版） -->
     <div id="view-register" class="app-view hidden">
       <div class="menu-card" style="border-left: 8px solid var(--main-purple)">
         <span class="khmer-text" style="color: var(--main-purple);">ចុះឈ្មោះផ្ទះរបស់អ្នក</span>
         <span class="eng-text" style="font-weight: bold; color: var(--main-purple);">Register Your Home</span>
         <span class="jap-text" style="font-weight: bold; color: var(--main-purple);">【初回のみ】マイホーム登録</span>
         <p style="font-size: 0.8em; color:#666; margin-top:5px;">
-          <span style="display:block;">បន្ទាប់ពីចុះឈ្មោះរួច លេខសម្គាល់ផ្ទះ (House ID) ផ្ទាល់ខ្លួនជារបស់អ្នកនឹងត្រូវបង្កើតឡើងដោយស្វ័យប្រវត្តិ。</span>
+          <span style="display:block;">បន្ទាប់ពីចុះឈ្មោះរួច លេខសម្គាល់ផ្ទះ (House ID) ផ្ទាល់ខ្លួនជារបស់អ្នកនឹងត្រូវបង្កើតឡើងដោយស្វ័យប្រវត្តិ។</span>
           <span style="display:block; margin-top:2px;">After registering, your own unique House ID will be automatically generated.</span>
           <span style="display:block; color:#999; margin-top:2px;">※登録するとあなた専用のHouse ID番号が自動発行されます。</span>
         </p>
@@ -268,7 +264,6 @@
       </div>
     </div>
 
-    <!-- 画面1: メインメニュー（住民用・完全多言語版） -->
     <div id="view-main" class="app-view hidden">
       <div class="menu-card" style="border-left: 8px solid var(--main-green)">
         <span class="khmer-text">សម្រាប់អ្នកភូមិ</span>
@@ -289,7 +284,6 @@
         </button>
       </div>
 
-      <!-- アプリ内共有QRコードボタン -->
       <div style="margin-top: 20px;">
         <button class="btn-purple" onclick="showShareQR()" style="padding: 12px;">
             <span class="khmer-text" style="font-size: 0.95em; color: white;">ចែករំលែកកម្មវិធីនេះ</span>
@@ -307,20 +301,17 @@
       </div>
     </div>
 
-    <!-- 画面2: 調査員メニュー -->
     <div id="view-researcher" class="app-view hidden">
       <div class="menu-card" style="border-left: 8px solid var(--main-blue)">
         <h3 style="margin-top: 0; color: var(--main-blue);">📋 調査員メニュー</h3>
         <p style="font-size: 0.9em; color: #666;">対象世帯の記録と履歴の確認を行います</p>
         <button class="btn-blue" onclick="showView('view-form')">✍️ 新規調査記録</button>
         <button class="btn-outline" onclick="showView('view-history')">🏠 選択中ハウスの履歴・マップ</button>
-        <!-- 管理者ページボタン -->
         <button class="btn-purple" onclick="showView('view-admin')" style="margin-top: 15px;">⚙️ 管理者ダッシュボード（全データ）</button>
         <button class="btn-outline" onclick="location.reload()" style="margin-top: 20px; border-color: #ffcccc; color: #d32f2f;">🚪 ログアウト</button>
       </div>
     </div>
 
-    <!-- 画面3: 新規調査記録フォーム -->
     <div id="view-form" class="app-view hidden">
       <h3 style="color: var(--main-blue);">✍️ 新規調査記録</h3>
       <label>調査員名</label>
@@ -342,7 +333,6 @@
       <button class="btn-outline" onclick="showView('view-researcher')">戻る</button>
     </div>
 
-    <!-- 画面4: 特定の一軒の履歴画面 -->
     <div id="view-history" class="app-view hidden">
       <h3 style="color: var(--main-blue);">🏠 選択中の家の調査履歴</h3>
       <div id="map"></div>
@@ -350,11 +340,9 @@
       <button class="btn-outline" onclick="showView('view-researcher')" style="margin-top: 20px;">戻る</button>
     </div>
 
-    <!-- 画面5: 管理者ダッシュボード画面（全件データ＆全体マップ） -->
     <div id="view-admin" class="app-view hidden">
       <h3 style="color: var(--main-purple);">⚙️ 管理者ダッシュボード</h3>
       
-      <!-- 特定IDのクイック履歴検索 -->
       <div style="background: #f9f9f9; padding: 12px; border-radius: 8px; margin-bottom: 15px; border: 1px solid #ddd;">
         <label style="font-size:0.85em;">🔍 個別ハウスID履歴検索:</label>
         <div style="display:flex; gap:5px; margin-top:5px;">
@@ -379,15 +367,13 @@
             </tr>
           </thead>
           <tbody id="admin-table-body">
-            <!-- JSで動的に生成 -->
-          </tbody>
+            </tbody>
         </table>
       </div>
 
       <button class="btn-outline" onclick="showView('view-researcher')" style="margin-top: 20px;">戻る</button>
     </div>
 
-    <!-- QRコードポップアップモーダル -->
     <div id="qr-modal" class="modal hidden" onclick="closeShareQR()">
       <div class="modal-content" onclick="event.stopPropagation()">
         <h4 style="margin-top:0;">📱 近くの人に共有 / Share App</h4>
@@ -430,16 +416,13 @@
         let savedId = localStorage.getItem('my_saved_house_id');
 
         if (paramId) {
-            // URLに直接ID（QRコード等）があればそれを最優先
             houseId = paramId;
             localStorage.setItem('my_saved_house_id', houseId);
             enterAsResident();
         } else if (savedId) {
-            // スマホに記憶されたIDがあれば自動マイページ化
             houseId = savedId;
             enterAsResident();
         } else {
-            // どちらもなければ「新規マイホーム登録画面」を出す
             showView('view-register');
         }
     };
@@ -463,7 +446,6 @@
         btn.disabled = true;
         btn.innerText = "⏳ 登録中 / Registering...";
 
-        // Firestoreのトランザクション機能を使用して、安全に連番(H-0001...)を発行する
         const counterRef = db.collection("system_counters").doc("house_id_counter");
 
         db.runTransaction((transaction) => {
@@ -476,15 +458,12 @@
                 return nextNumber;
             });
         }).then((newSerialNumber) => {
-            // 数値を4桁のゼロ埋め（例: H-0001）にする
             const formattedId = "H-" + String(newSerialNumber).padStart(4, '0');
             houseId = formattedId;
 
-            // 位置情報の取得（任意・強制しない）
             navigator.geolocation.getCurrentPosition((pos) => {
                 saveRegistrationData(ownerName, familySize, pos.coords.latitude, pos.coords.longitude);
             }, (error) => {
-                // 位置情報が拒否された場合は、デフォルト座標（null）で進む
                 saveRegistrationData(ownerName, familySize, null, null);
             }, { timeout: 5000 });
 
@@ -496,7 +475,6 @@
         });
     }
 
-    // 住民登録データをクラウドと端末メモリにセーブする内部関数
     function saveRegistrationData(name, size, lat, lng) {
         const logData = {
             houseId: houseId,
@@ -514,7 +492,6 @@
         }
 
         db.collection("house_logs").add(logData).then(() => {
-            // 端末にIDを永久保存（簡易マイページ化完了）
             localStorage.setItem('my_saved_house_id', houseId);
             alert(`登録完了！あなた専用のIDは [ ${houseId} ] です。\nRegistration complete! Your ID is ${houseId}.`);
             enterAsResident();
@@ -523,12 +500,11 @@
         });
     }
 
-    // 画面切り替え管理（バグ修正版：ポップアップを誤作動させないためにクラス名を厳密化）
     function showView(id) {
         document.querySelectorAll('.container > .app-view').forEach(v => v.classList.add('hidden'));
         document.getElementById(id).classList.remove('hidden');
         if(id === 'view-history') initMap();
-        if(id === 'view-admin') initAdminDashboard(); // 管理者ページ起動時
+        if(id === 'view-admin') initAdminDashboard(); 
     }
 
     function checkAuth() {
@@ -540,7 +516,6 @@
         }
     }
 
-    // 手動ID変更時の処理
     function changeHouseIdHandy() {
         const newId = document.getElementById('input-house-id').value.trim();
         if (!newId) {
@@ -554,7 +529,6 @@
         if (!document.getElementById('view-history').classList.contains('hidden')) loadHistory();
     }
 
-    // 特定の家用マップ
     function initMap() {
         if(!map) {
             map = L.map('map').setView([12.5, 104.1], 10);
@@ -564,7 +538,6 @@
         loadHistory();
     }
 
-    // 住民のパンフレット・動画ログ送信
     function logAndOpen(actionType, targetUrl) {
         const gasUrl = "https://script.google.com/macros/s/AKfycbyPIhxqIx_M9YmYtdgFWcxJVqE7m93UdCHQIG5zkZJ4d13kTLndkYxoDWaLVeMAZyKDHg/exec";
         const logUrl = `${gasUrl}?houseId=${encodeURIComponent(houseId)}&action=${encodeURIComponent(actionType)}&url=${encodeURIComponent(targetUrl)}`;
@@ -572,7 +545,6 @@
         window.open(targetUrl, '_blank');
     }
 
-    // 一軒の履歴読み込み
     function loadHistory() {
         const list = document.getElementById('history-list');
         list.innerHTML = "<p style='text-align:center;'>データを読み込み中...</p>";
@@ -609,7 +581,6 @@
         }).catch(err => { list.innerHTML = "<p style='color:red;'>データ取得失敗</p>"; });
     }
 
-    // 管理者ダッシュボードの初期化
     function initAdminDashboard() {
         if(!adminMap) {
             adminMap = L.map('admin-map').setView([12.5, 104.1], 9);
@@ -619,7 +590,6 @@
         loadAdminData();
     }
 
-    // 全データを多角的にロードしてテーブルとマップに表示する
     function loadAdminData() {
         const tbody = document.getElementById('admin-table-body');
         tbody.innerHTML = "<tr><td colspan='5' style='text-align:center;'>読込中...</td></tr>";
@@ -640,13 +610,9 @@
 
               snap.forEach(doc => {
                   const d = doc.data();
-                  
-                  // 1. 各家IDの最も新しいログを「最新の家の基本状態」として抽出
                   if (!latestHouses[d.houseId]) {
                       latestHouses[d.houseId] = d;
                   }
-
-                  // 2. 位置情報があるログは、過去の調査含めてすべてマップに全マッピングする
                   if (d.lat && d.lng) {
                       const dateStr = d.timestamp ? d.timestamp.toDate().toLocaleDateString('ja-JP') : '不明';
                       L.marker([d.lat, d.lng]).addTo(adminMarkersGroup)
@@ -655,7 +621,6 @@
                   }
               });
 
-              // テーブルに見やすくID順ソートして表示
               const sortedIds = Object.keys(latestHouses).sort();
               sortedIds.forEach(id => {
                   const d = latestHouses[id];
@@ -675,7 +640,6 @@
           });
     }
 
-    // 管理者ページから個別ハウス履歴にクイックジャンプ
     function adminJumpToHouse(id) {
         houseId = id;
         document.getElementById('input-house-id').value = id;
@@ -683,23 +647,19 @@
         showView('view-history');
     }
 
-    // 管理者用の個別ID検索
     function adminSearchIndividual() {
         const searchId = document.getElementById('admin-search-id').value.trim();
         if(!searchId) return alert("IDを入力してください");
         adminJumpToHouse(searchId);
     }
 
-    // 共有用QRコードポップアップ表示
     function showShareQR() {
-        // 現在のブラウザURL（共通リンク）を取得
         const currentUrl = window.location.origin + window.location.pathname; 
         document.getElementById('qr-modal').classList.remove('hidden');
 
         const qrContainer = document.getElementById('qrcode');
-        qrContainer.innerHTML = ""; // 一度初期化
+        qrContainer.innerHTML = ""; 
 
-        // QRコード生成
         qrGenerator = new QRCode(qrContainer, {
             text: currentUrl,
             width: 180,
@@ -714,7 +674,6 @@
         document.getElementById('qr-modal').classList.add('hidden');
     }
 
-    // 調査員データ保存処理
     function submitSurvey() {
         const inspector = document.getElementById('inspector').value.trim();
         const ownerName = document.getElementById('ownerName').value.trim();
@@ -731,7 +690,6 @@
         navigator.geolocation.getCurrentPosition(pos => {
             btn.innerText = "⏳ クラウドへ保存中...";
             
-            // GASへのバックアップ送信
             const gasUrl = "https://script.google.com/macros/s/AKfycbyPIhxqIx_M9YmYtdgFWcxJVqE7m93UdCHQIG5zkZJ4d13kTLndkYxoDWaLVeMAZyKDHg/exec";
             const params = new URLSearchParams();
             params.append('houseId', houseId);
@@ -744,7 +702,6 @@
             params.append('lng', pos.coords.longitude);
             fetch(gasUrl, { method: "POST", mode: "no-cors", body: params });
 
-            // Firestoreへの保存
             db.collection("house_logs").add({
                 houseId: houseId,
                 inspector: inspector,
