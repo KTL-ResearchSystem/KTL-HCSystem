@@ -14,6 +14,8 @@
 
   <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
 
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
   <style>
     :root {
       --main-green: #27ae60;
@@ -164,7 +166,6 @@
       font-size: 1.1em;
     }
 
-    /* 管理者用テーブルスタイル */
     .admin-table {
       width: 100%;
       border-collapse: collapse;
@@ -182,7 +183,6 @@
     }
     .admin-table tr:nth-child(even) { background-color: #f9f9f9; }
 
-    /* QRモーダルのスタイル */
     .modal {
       position: fixed;
       top: 0; left: 0; width: 100%; height: 100%;
@@ -191,7 +191,8 @@
       z-index: 9999;
     }
     .modal-content {
-      background: white; padding: 30px; border-radius: 12px; text-align: center; max-width: 300px;
+      background: white; padding: 30px; border-radius: 12px; text-align: center; max-width: 320px;
+      box-sizing: border-box;
     }
 
     .footer {
@@ -203,6 +204,23 @@
       font-size: 0.7em;
       color: #888;
       line-height: 1.4;
+    }
+
+    /* 言語別ボタン用のコンテナ */
+    .lang-section {
+      background: #f9f9f9;
+      padding: 10px;
+      border-radius: 8px;
+      margin-bottom: 12px;
+      border: 1px dashed #ccc;
+    }
+    .lang-badge {
+      font-size: 0.75em;
+      font-weight: bold;
+      color: #777;
+      display: block;
+      margin-bottom: 5px;
+      text-align: left;
     }
   </style>
 </head>
@@ -271,16 +289,17 @@
 
         <hr style="border: 0; border-top: 1px solid #eee; margin: 15px 0;">
 
-        <button class="btn-green" onclick="logAndOpen('パンフレット閲覧', 'YOUR_PAMPHLET_URL')">
-            <span class="khmer-text" style="font-size: 1.1em; color:white;">មើលខិត្តប័ណ្ណ</span>
-            <span class="eng-text" style="color:white;">Read Pamphlet</span>
-            <span class="jap-text" style="color:#e8f5e9;">パンフレットを見る</span>
-        </button>
-        <button class="btn-green" onclick="logAndOpen('動画視聴', 'YOUR_VIDEO_URL')">
-            <span class="khmer-text" style="font-size: 1.1em; color:white;">មើលវីដេអូ</span>
-            <span class="eng-text" style="color:white;">Watch Video</span>
-            <span class="jap-text" style="color:#e8f5e9;">動画を見る</span>
-        </button>
+        <div class="lang-section">
+          <span class="lang-badge">🇰🇭 ភាសាខ្មែរ (Khmer)</span>
+          <button class="btn-green" style="padding:12px; margin:4px 0;" onclick="logAndOpen('パンフレット閲覧_KM', 'YOUR_KHMER_PAMPHLET_URL')">មើលខិត្តប័ណ្ណ</button>
+          <button class="btn-green" style="padding:12px; margin:4px 0;" onclick="logAndOpen('動画視聴_KM', 'YOUR_KHMER_VIDEO_URL')">មើលវីដេអូ</button>
+        </div>
+
+        <div class="lang-section">
+          <span class="lang-badge">🇬🇧🇯🇵 English / 日本語</span>
+          <button class="btn-green" style="background:#2ecc71; padding:12px; margin:4px 0;" onclick="logAndOpen('パンフレット閲覧_EN', 'YOUR_ENGLISH_PAMPHLET_URL')">Read Pamphlet / パンフレット</button>
+          <button class="btn-green" style="background:#2ecc71; padding:12px; margin:4px 0;" onclick="logAndOpen('動画視聴_EN', 'YOUR_ENGLISH_VIDEO_URL')">Watch Video / 解説動画</button>
+        </div>
       </div>
 
       <div style="margin-top: 20px;">
@@ -304,7 +323,7 @@
       <div class="menu-card" style="border-left: 8px solid var(--main-blue)">
         <h3 style="margin-top: 0; color: var(--main-blue);">📋 調査員メニュー</h3>
         <p style="font-size: 0.9em; color: #666;">対象世帯の記録と履歴の確認を行います</p>
-        <button class="btn-blue" onclick="showView('view-form')">✍️ 新規調査記録</button>
+        <button class="btn-blue" onclick="clearFormAndOpen()">✍️ 新規調査記録</button>
         <button class="btn-outline" onclick="showView('view-history')">🏠 選択中ハウスの履歴・マップ</button>
         <button class="btn-purple" onclick="showView('view-admin')" style="margin-top: 15px;">⚙️ 管理者ダッシュボード（全データ）</button>
         <button class="btn-outline" onclick="location.reload()" style="margin-top: 20px; border-color: #ffcccc; color: #d32f2f;">🚪 ログアウト</button>
@@ -312,7 +331,11 @@
     </div>
 
     <div id="view-form" class="app-view hidden">
-      <h3 style="color: var(--main-blue);">✍️ 新規調査記録</h3>
+      <h3 style="color: var(--main-blue);">✍️ <span id="form-title-mode">新規調査記録</span></h3>
+      <div style="background:#e3f2fd; padding:10px; border-radius:6px; font-weight:bold; font-size:0.9em; color:#1565c0; margin-bottom:15px;">
+        対象ハウスID: <span id="form-target-id">未設定</span>
+      </div>
+      
       <label>調査員名</label>
       <input type="text" id="inspector" placeholder="例: Kunisealiner880">
       <label>家主の氏名（Owner Name）</label>
@@ -328,6 +351,9 @@
       </select>
       <label>その他メモ</label>
       <textarea id="notes" rows="4" placeholder="調査メモを入力..."></textarea>
+      
+      <div id="gps-status-area" style="font-size:0.8em; color:#666; margin-bottom:10px; text-align:right;"></div>
+
       <button class="btn-blue" id="save-btn" onclick="submitSurvey()">💾 現在地を取得して保存</button>
       <button class="btn-outline" onclick="showView('view-researcher')">戻る</button>
     </div>
@@ -350,10 +376,19 @@
         </div>
       </div>
 
-      <h4>🗺️ 全世帯マッピング（登録・調査全地点）</h4>
+      <h4>📊 雨樋（あまどい）普及状況リアルタイム集計</h4>
+      <div style="max-width: 220px; margin: 0 auto 20px auto;">
+        <canvas id="gutterChart" width="200" height="200"></canvas>
+      </div>
+
+      <div style="display:flex; justify-content: space-between; align-items:center;">
+        <h4>🗺️ 全世帯マッピング</h4>
+        <button onclick="downloadCSV()" style="width:auto; padding:8px 12px; font-size:0.8em; background:#27ae60; color:white; margin:0;">📥 CSV出力</button>
+      </div>
       <div id="admin-map"></div>
 
       <h4>📋 全ハウス最新情報一覧</h4>
+      <p style="font-size:0.75em; color:#777; margin:0 0 5px 0;">※ハウスIDの横の「✍️」から追跡（追加）調査フォームへ飛べます</p>
       <div style="overflow-x: auto;">
         <table class="admin-table">
           <thead>
@@ -361,8 +396,8 @@
               <th>HouseID</th>
               <th>氏名</th>
               <th>人数</th>
-              <th>雨樋状況</th>
-              <th>最終更新</th>
+              <th>雨樋</th>
+              <th>更新日</th>
             </tr>
           </thead>
           <tbody id="admin-table-body">
@@ -371,6 +406,31 @@
       </div>
 
       <button class="btn-outline" onclick="showView('view-researcher')" style="margin-top: 20px;">戻る</button>
+    </div>
+
+    <div id="reg-success-modal" class="modal hidden">
+      <div class="modal-content" style="max-width:360px;">
+        <div style="font-size: 40px; color: var(--main-purple); margin-bottom: 10px;">🎉</div>
+        
+        <div class="khmer-text" style="color: var(--main-purple); font-size:1.1em;">ការចុះឈ្មោះបានជោគជ័យ!</div>
+        <div class="eng-text" style="font-weight: bold; color: var(--main-purple); font-size:0.9em;">Registration Successful!</div>
+        <div class="jap-text" style="font-weight: bold; color: var(--main-purple); font-size:0.75em;">マイホーム登録が完了しました！</div>
+        
+        <div style="background: #f5eef8; border: 2px dashed var(--main-purple); padding: 15px; border-radius: 10px; margin: 15px 0;">
+          <span style="font-size:0.8em; color:#555; display:block;">លេខសម្គាល់ផ្ទះរបស់អ្នក / Your House ID</span>
+          <span id="modal-generated-id" style="font-size: 2em; font-weight: bold; color: var(--main-purple); display:block; margin:5px 0;">H-0000</span>
+        </div>
+
+        <p style="font-size: 0.75em; color: #e74c3c; font-weight: bold; line-height: 1.4; text-align: left; margin: 10px 0;">
+          ⚠️ សូមថតរូបអេក្រង់នេះទុក ដើម្បីកុំឱ្យភ្លេចលេខសម្គាល់របស់អ្នក។<br>
+          ⚠️ Please take a screenshot of this screen so you do not forget your ID.<br>
+          ⚠️ この画面のスクショを必ず撮ってIDを保存してください。
+        </p>
+        
+        <button class="btn-purple" onclick="closeRegModalAndGo()" style="margin-top:10px; padding:12px;">
+          <span class="khmer-text" style="color:white; font-size:0.9em; margin:0;">យល់ព្រម / Start</span>
+        </button>
+      </div>
     </div>
 
     <div id="qr-modal" class="modal hidden" onclick="closeShareQR()">
@@ -383,8 +443,8 @@
     </div>
 
     <div class="footer">
-      @SendaiNikaHighSchool 2026 Global Study II Rainwater group<br>
-      System creat by kunisealiner    「Ver.β1.101」 update 2026/6/29
+      @SendaiNikaHighSchool2026 Global Study II Rainwater group<br>
+      System creat by kunisealiner Ver.β1.11 
     </div>
   </div>
 
@@ -407,8 +467,9 @@
     let map, markersGroup;
     let adminMap, adminMarkersGroup;
     let qrGenerator = null;
+    let gutterChartInstance = null; // グラフのインスタンス管理用
+    let globalAdminRawData = [];   // CSVダウンロード用の全件キャッシュ
 
-    // アプリ起動時の自動ログイン・登録チェック処理
     window.onload = function() {
         const urlParams = new URLSearchParams(window.location.search);
         let paramId = urlParams.get('id');
@@ -432,7 +493,6 @@
         showView('view-main');
     }
 
-    // 住民自身によるマイホーム連番登録処理
     function registerMyHome() {
         const ownerName = document.getElementById('reg-ownerName').value.trim();
         const familySize = document.getElementById('reg-familySize').value.trim();
@@ -474,11 +534,9 @@
         });
     }
 
-    // 【今回修正】住民登録データをクラウド、端末、そしてGASへ送信する関数
     function saveRegistrationData(name, size, lat, lng) {
         const gasUrl = "https://script.google.com/macros/s/AKfycbyPIhxqIx_M9YmYtdgFWcxJVqE7m93UdCHQIG5zkZJ4d13kTLndkYxoDWaLVeMAZyKDHg/exec";
         
-        // GAS配信用にパラメータを作成
         const params = new URLSearchParams();
         params.append('houseId', houseId);
         params.append('inspector', "住民自身 (Resident)");
@@ -489,10 +547,8 @@
         params.append('lat', lat !== null ? lat : "");
         params.append('lng', lng !== null ? lng : "");
         
-        // GASへ非同期でバックアップ送信を行う
         fetch(gasUrl, { method: "POST", mode: "no-cors", body: params });
 
-        // Firestore用のオブジェクト
         const logData = {
             houseId: houseId,
             inspector: "住民自身 (Resident)",
@@ -508,14 +564,24 @@
             logData.lng = lng;
         }
 
-        // Firestoreへ保存
         db.collection("house_logs").add(logData).then(() => {
             localStorage.setItem('my_saved_house_id', houseId);
-            alert(`登録完了！あなた専用のIDは [ ${houseId} ] です。\nRegistration complete! Your ID is ${houseId}.`);
-            enterAsResident();
+            
+            // 【改良】無機質なアラートではなく、綺麗な多言語モーダルを起動
+            document.getElementById('modal-generated-id').innerText = houseId;
+            document.getElementById('reg-success-modal').classList.remove('hidden');
+            
+            const btn = document.getElementById('reg-btn');
+            btn.disabled = false;
+            btn.innerText = "Register & Start";
         }).catch(err => {
             alert("エラーが発生しました: " + err.message);
         });
+    }
+
+    function closeRegModalAndGo() {
+        document.getElementById('reg-success-modal').classList.add('hidden');
+        enterAsResident();
     }
 
     function showView(id) {
@@ -608,6 +674,35 @@
         loadAdminData();
     }
 
+    // 【改良】新規登録と追跡（追加）調査を明確に切り分けるボタン処理
+    function clearFormAndOpen() {
+        document.getElementById('form-title-mode').innerText = "新規調査記録";
+        document.getElementById('form-target-id').innerText = houseId ? houseId : "選択されていません";
+        document.getElementById('ownerName').value = '';
+        document.getElementById('familySize').value = '';
+        document.getElementById('notes').value = '';
+        document.getElementById('hasGutter').selectedIndex = 0;
+        document.getElementById('gps-status-area').innerText = "";
+        showView('view-form');
+    }
+
+    // 【改良】管理者画面から特定の家を指定して「追跡（追加）調査」へジャンプする機能
+    function adminPrepareFollowUp(id, currentOwner, currentSize) {
+        houseId = id;
+        document.getElementById('input-house-id').value = id;
+        localStorage.setItem('my_saved_house_id', id);
+
+        document.getElementById('form-title-mode').innerText = "追跡・追加調査記録";
+        document.getElementById('form-target-id').innerText = id;
+        document.getElementById('ownerName').value = currentOwner || "";
+        document.getElementById('familySize').value = currentSize || "";
+        document.getElementById('notes').value = "【追跡調査】";
+        document.getElementById('hasGutter').selectedIndex = 0;
+        document.getElementById('gps-status-area').innerText = "";
+        
+        showView('view-form');
+    }
+
     function loadAdminData() {
         const tbody = document.getElementById('admin-table-body');
         tbody.innerHTML = "<tr><td colspan='5' style='text-align:center;'>読込中...</td></tr>";
@@ -618,6 +713,7 @@
           .get()
           .then(snap => {
               tbody.innerHTML = "";
+              globalAdminRawData = []; // キャッシュクリア
               if (snap.empty) {
                   tbody.innerHTML = "<tr><td colspan='5' style='text-align:center;'>記録なし</td></tr>";
                   return;
@@ -626,18 +722,32 @@
               const latestHouses = {};
               let coords = [];
 
+              // グラフ集計用のカウンタ
+              let chartCounts = { "あり (Yes)": 0, "なし (No)": 0, "破損・修理が必要": 0, "未確認": 0 };
+
               snap.forEach(doc => {
                   const d = doc.data();
+                  globalAdminRawData.push(d); // CSV用に全件保存
+                  
                   if (!latestHouses[d.houseId]) {
                       latestHouses[d.houseId] = d;
+                      // 最終更新状態をグラフ集計対象にする
+                      if (chartCounts[d.hasGutter] !== undefined) {
+                          chartCounts[d.hasGutter]++;
+                      } else {
+                          chartCounts["未確認"]++;
+                      }
                   }
                   if (d.lat && d.lng) {
                       const dateStr = d.timestamp ? d.timestamp.toDate().toLocaleDateString('ja-JP') : '不明';
                       L.marker([d.lat, d.lng]).addTo(adminMarkersGroup)
-                       .bindPopup(`<b>ID: ${d.houseId}</b><br>家主: ${d.ownerName}<br>雨樋: ${d.hasGutter}<br>記録日: ${dateStr}<br>録者: ${d.inspector}`);
+                       .bindPopup(`<b>ID: ${d.houseId}</b><br>家主: ${d.ownerName}<br>雨樋: ${d.hasGutter}<br>記録日: ${dateStr}`);
                       coords.push([d.lat, d.lng]);
                   }
               });
+
+              // グラフ描画呼び出し
+              drawGutterChart(chartCounts);
 
               const sortedIds = Object.keys(latestHouses).sort();
               sortedIds.forEach(id => {
@@ -645,7 +755,10 @@
                   const dateStr = d.timestamp ? d.timestamp.toDate().toLocaleDateString('ja-JP') : '不明';
                   const tr = document.createElement('tr');
                   tr.innerHTML = `
-                      <td style="color:var(--main-purple); font-weight:bold; cursor:pointer;" onclick="adminJumpToHouse('${d.houseId}')">${d.houseId} ➔</td>
+                      <td>
+                        <span style="color:var(--main-blue); font-weight:bold; cursor:pointer;" onclick="adminJumpToHouse('${d.houseId}')">${d.houseId} ➔</span>
+                        <span style="cursor:pointer; margin-left:5px; background:#e3f2fd; padding:2px 4px; border-radius:4px; font-size:0.9em;" title="この世帯の追跡調査を行う" onclick="adminPrepareFollowUp('${d.houseId}', '${d.ownerName}', ${d.familySize})">✍️</span>
+                      </td>
                       <td><b>${d.ownerName}</b></td>
                       <td>${d.familySize}人</td>
                       <td>${d.hasGutter}</td>
@@ -656,6 +769,67 @@
 
               if(coords.length > 0) adminMap.fitBounds(coords, {padding: [30, 30]});
           });
+    }
+
+    // 【改良】Chart.jsによる雨樋普及状況グラフの生成・更新処理
+    function drawGutterChart(counts) {
+        const ctx = document.getElementById('gutterChart').getContext('2d');
+        
+        if (gutterChartInstance) {
+            gutterChartInstance.destroy(); // 既存のグラフを破棄して再描画
+        }
+
+        gutterChartInstance = new Chart(ctx, {
+            type: 'pie',
+            data: {
+                labels: Object.keys(counts),
+                datasets: [{
+                    data: Object.values(counts),
+                    backgroundColor: ['#27ae60', '#e74c3c', '#f39c12', '#95a5a6'],
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                responsive: true,
+                plugins: {
+                    legend: { position: 'bottom', labels: { boxWidth: 12, font: { size: 10 } } }
+                }
+            }
+        });
+    }
+
+    // 【改良】ワンクリックCSVダウンロード（Shift-JIS/Excel文字化けを防ぐBOM付き）
+    function downloadCSV() {
+        if(globalAdminRawData.length === 0) return alert("出力するデータがありません。");
+
+        let csvContent = "\uFEFF"; // Excel用のBOM(文字化け防止)
+        csvContent += "HouseID,調査・登録者,家主名,世帯人数,雨樋状況,メモ,緯度,経度,日時\n";
+
+        globalAdminRawData.forEach(d => {
+            let dateStr = d.timestamp ? d.timestamp.toDate().toLocaleString('ja-JP') : '不明';
+            let row = [
+                d.houseId || "",
+                `"${(d.inspector || "").replace(/"/g, '""')}"`,
+                `"${(d.ownerName || "").replace(/"/g, '""')}"`,
+                d.familySize || 0,
+                `"${(d.hasGutter || "")}"`,
+                `"${(d.note || "").replace(/"/g, '""')}"`,
+                d.lat || "",
+                d.lng || "",
+                `"${dateStr}"`
+            ].join(",");
+            csvContent += row + "\n";
+        });
+
+        const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+        const link = document.createElement("a");
+        const url = URL.createObjectURL(blob);
+        link.setAttribute("href", url);
+        link.setAttribute("download", `TonleSap_Project_Data_2026.csv`);
+        link.style.visibility = 'hidden';
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
     }
 
     function adminJumpToHouse(id) {
@@ -674,7 +848,6 @@
     function showShareQR() {
         const currentUrl = window.location.origin + window.location.pathname; 
         document.getElementById('qr-modal').classList.remove('hidden');
-
         const qrContainer = document.getElementById('qrcode');
         qrContainer.innerHTML = ""; 
 
@@ -702,10 +875,18 @@
         if(!inspector || !ownerName) return alert("「調査員名」と「家主の氏名」は必須です。");
 
         const btn = document.getElementById('save-btn');
+        const gpsStatus = document.getElementById('gps-status-area');
         btn.disabled = true;
         btn.innerText = "⏳ 位置情報を取得中...";
 
         navigator.geolocation.getCurrentPosition(pos => {
+            // 【改良】GPSの精度（誤差が何メートルか）を画面上に判定・表示する処理
+            const accuracy = pos.coords.accuracy;
+            gpsStatus.innerText = `📡 GPS精度: 誤差範囲 ±${Math.round(accuracy)}m`;
+            if(accuracy > 100) {
+                gpsStatus.innerHTML += " <span style='color:orange;'>⚠️やや広範囲の誤差あり</span>";
+            }
+
             btn.innerText = "⏳ クラウドへ保存中...";
             
             const gasUrl = "https://script.google.com/macros/s/AKfycbyPIhxqIx_M9YmYtdgFWcxJVqE7m93UdCHQIG5zkZJ4d13kTLndkYxoDWaLVeMAZyKDHg/exec";
