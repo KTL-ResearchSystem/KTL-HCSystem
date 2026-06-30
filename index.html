@@ -208,7 +208,6 @@
       line-height: 1.4;
     }
 
-    /* 言語別ボタン用のコンテナ */
     .lang-section {
       background: #f9f9f9;
       padding: 10px;
@@ -248,13 +247,34 @@
       </div>
     </div>
 
+    <div id="view-welcome" class="app-view hidden">
+      <div class="menu-card" style="border-left: 8px solid var(--main-green); text-align: center;">
+        <span class="khmer-text" style="font-size: 1.4em; color: var(--main-green);">សូមស្វាគមន៍</span>
+        <span class="eng-text" style="font-size: 1.1em; font-weight: bold;">Welcome to Tonle Sap Project</span>
+        <span class="jap-text" style="font-size: 0.85em; margin-bottom: 20px; color: #555;">アプリの利用目的を選択してください。</span>
+        
+        <hr style="border: 0; border-top: 1px solid #eee; margin: 20px 0;">
+        
+        <button class="btn-green" onclick="showView('view-register')" style="margin-bottom: 20px; padding: 20px; box-shadow: 0 4px 6px rgba(0,0,0,0.1);">
+          <span class="khmer-text" style="color: white; font-size: 1.1em; margin: 0;">ខ្ញុំជាអ្នកភូមិ (ចុះឈ្មោះផ្ទះ)</span>
+          <span class="eng-text" style="color: white; font-size: 0.9em; margin: 0;">I am a Resident (Register Home)</span>
+          <span class="jap-text" style="color: #e8f5e9; font-size: 0.75em; margin: 0;">住民の方はこちら（マイホーム登録）</span>
+        </button>
+        
+        <button class="btn-outline" onclick="checkAuth('register')" style="border-color: var(--main-blue); color: var(--main-blue); padding: 16px;">
+          📋 私は調査員です（研究グループメンバー）<br>
+          <span style="font-size: 0.75em; color: #666;">I am an Investigator / Researcher</span>
+        </button>
+      </div>
+    </div>
+
     <div id="view-register" class="app-view hidden">
       <div class="menu-card" style="border-left: 8px solid var(--main-purple)">
         <span class="khmer-text" style="color: var(--main-purple);">ចុះឈ្មោះផ្ទះរបស់អ្នក</span>
         <span class="eng-text" style="font-weight: bold; color: var(--main-purple);">Register Your Home</span>
         <span class="jap-text" style="font-weight: bold; color: var(--main-purple);">【初回のみ】マイホーム登録</span>
         <p style="font-size: 0.8em; color:#666; margin-top:5px;">
-          <span style="display:block;">បន្ទាប់ពីចុះឈ្មោះរួច លេខសម្គាល់ផ្ទះ (House ID) ផ្ទាល់ខ្លួនជារបស់អ្នកនឹងត្រូវបង្កើតឡើងដោយស្វ័យប្រវត្តិ。</span>
+          <span style="display:block;">បន្ទាប់ពីចុះឈ្មោះរួច លេខសម្គាល់ផ្ទះ (House ID) ផ្ទាល់ខ្លួនជារបស់អ្នកនឹងត្រូវបង្កើតឡើងដោយស្វ័យប្រវត្តិ។</span>
           <span style="display:block; margin-top:2px;">After registering, your own unique House ID will be automatically generated.</span>
           <span style="display:block; color:#999; margin-top:2px;">※登録するとあなた専用のHouse ID番号が自動発行されます。</span>
         </p>
@@ -269,7 +289,7 @@
         <input type="text" id="reg-ownerName" placeholder="Example: Sok San">
 
         <label style="margin-top:10px; display:block;">
-          <span class="khmer-text" style="font-size:1em; margin:0;">ចំនួនសមាជិកគ្រួសារ</span>
+          <span class="khmer-text" style="font-size:1em; margin:0;">ចំនួនសមាជិកគ្រខ្សារ</span>
           <span class="eng-text" style="font-size:0.85em; margin:0;">Family Size</span>
           <span class="jap-text" style="font-size:0.7em; margin:0;">世帯人数</span>
         </label>
@@ -280,6 +300,29 @@
           <span class="eng-text" style="color: white; font-size: 0.9em;">Register & Start</span>
           <span class="jap-text" style="color: #f5eef8; font-size: 0.7em;">位置情報を登録して利用開始（位置は任意）</span>
         </button>
+        
+        <button class="btn-outline" onclick="showView('view-welcome')" style="margin-top: 10px; padding: 10px; font-size: 0.85em;">戻る</button>
+      </div>
+    </div>
+
+    <div id="view-register-inspector" class="app-view hidden">
+      <div class="menu-card" style="border-left: 8px solid var(--main-blue)">
+        <h3 style="margin-top: 0; color: var(--main-blue);">📋 調査員 新規登録</h3>
+        <p style="font-size: 0.85em; color: #666; margin-bottom: 15px;">
+          研究グループのメンバー（調査員）情報を端末に登録します。登録した名前は調査送信時に自動入力されます。
+        </p>
+        
+        <label>氏名（ローマ字または日本語）</label>
+        <input type="text" id="ins-reg-name" placeholder="例: Nika Taro">
+        
+        <label>学籍番号</label>
+        <input type="text" id="ins-reg-studentId" placeholder="例: 240101">
+        
+        <label>研究グループ名</label>
+        <input type="text" id="ins-reg-group" placeholder="例: 雨水グループ">
+        
+        <button class="btn-blue" onclick="saveNewInspectorProfile()">💾 調査員として登録・ログイン</button>
+        <button class="btn-outline" onclick="showView('view-welcome')">キャンセル</button>
       </div>
     </div>
 
@@ -313,7 +356,7 @@
       </div>
 
       <div style="margin-top: 30px;">
-        <button class="btn-outline" onclick="checkAuth()">
+        <button class="btn-outline" onclick="checkAuth('menu')">
             <span class="khmer-text" style="font-size: 1em;">សម្រាប់អ្នកស្រាវជ្រាវ (ឡូកអ៊ីន)</span>
             <span class="eng-text">Researcher Login</span>
             <span class="jap-text">調査員用ログイン</span>
@@ -325,10 +368,35 @@
       <div class="menu-card" style="border-left: 8px solid var(--main-blue)">
         <h3 style="margin-top: 0; color: var(--main-blue);">📋 調査員メニュー</h3>
         <p style="font-size: 0.9em; color: #666;">対象世帯の記録と履歴の確認を行います</p>
+        
+        <div id="inspector-badge-area" style="background: #e3f2fd; padding: 10px; border-radius: 8px; font-size: 0.85em; margin-bottom: 15px; color: #1565c0; border: 1px solid #bbdefb;">
+          👤 担当調査員: <b id="lbl-current-inspector">未登録</b>
+        </div>
+
         <button class="btn-blue" onclick="clearFormAndOpen()">✍️ 新規調査記録</button>
         <button class="btn-outline" onclick="showView('view-history')">🏠 選択中ハウスの履歴・マップ</button>
+        <button class="btn-blue" style="background: #34495e;" onclick="showView('view-inspector-profile')">👤 調査員情報の確認・更新</button>
         <button class="btn-purple" onclick="showView('view-admin')" style="margin-top: 15px;">⚙️ 管理者ダッシュボード（全データ）</button>
-        <button class="btn-outline" onclick="location.reload()" style="margin-top: 20px; border-color: #ffcccc; color: #d32f2f;">🚪 ログアウト</button>
+        <button class="btn-outline" onclick="logoutInspector()" style="margin-top: 20px; border-color: #ffcccc; color: #d32f2f;">🚪 ログアウト (情報クリア)</button>
+      </div>
+    </div>
+
+    <div id="view-inspector-profile" class="app-view hidden">
+      <div class="menu-card" style="border-left: 8px solid var(--main-blue)">
+        <h3 style="margin-top: 0; color: var(--main-blue);">👤 調査員情報の確認・更新</h3>
+        <p style="font-size: 0.85em; color: #666; margin-bottom: 15px;">端末に保存されているあなたの情報を変更できます。</p>
+        
+        <label>氏名</label>
+        <input type="text" id="ins-prof-name">
+        
+        <label>学籍番号</label>
+        <input type="text" id="ins-prof-studentId">
+        
+        <label>研究グループ名</label>
+        <input type="text" id="ins-prof-group">
+        
+        <button class="btn-blue" onclick="updateInspectorProfile()">🔄 情報を更新する</button>
+        <button class="btn-outline" onclick="showView('view-researcher')">戻る</button>
       </div>
     </div>
 
@@ -338,8 +406,8 @@
         対象ハウスID: <span id="form-target-id">未設定</span>
       </div>
       
-      <label>調査員名</label>
-      <input type="text" id="inspector" placeholder="例: Kunisealiner880">
+      <label>調査員名 (プロフィールから自動挿入)</label>
+      <input type="text" id="inspector" placeholder="自動入力されます" readonly style="background-color: #f5f5f5; color: #777;">
       <label>家主の氏名（Owner Name）</label>
       <input type="text" id="ownerName" placeholder="例: Sok San">
       <label>世帯人数</label>
@@ -413,7 +481,6 @@
     <div id="reg-success-modal" class="modal hidden">
       <div class="modal-content" style="max-width:360px;">
         <div style="font-size: 40px; color: var(--main-purple); margin-bottom: 10px;">🎉</div>
-        
         <div class="khmer-text" style="color: var(--main-purple); font-size:1.1em;">ការចុះឈ្មោះបានជោគជ័យ!</div>
         <div class="eng-text" style="font-weight: bold; color: var(--main-purple); font-size:0.9em;">Registration Successful!</div>
         <div class="jap-text" style="font-weight: bold; color: var(--main-purple); font-size:0.75em;">マイホーム登録が完了しました！</div>
@@ -424,11 +491,10 @@
         </div>
 
         <p style="font-size: 0.75em; color: #e74c3c; font-weight: bold; line-height: 1.4; text-align: left; margin: 10px 0;">
-          ⚠️ សូមថតរូបអេក្រង់នេះទុក ដើម្បីកុំឱ្យភ្លេចលេខសម្គាល់របស់អ្នក។<br>
+          ⚠️ សូមថតរូបអេក្រង់នេះទុក ដើម្បីកុំឱ្យភ្លេចលេខសម្គាល់របស់អ្នក。<br>
           ⚠️ Please take a screenshot of this screen so you do not forget your ID.<br>
           ⚠️ この画面のスクショを必ず撮ってIDを保存してください。
         </p>
-        
         <button class="btn-purple" onclick="closeRegModalAndGo()" style="margin-top:10px; padding:12px;">
           <span class="khmer-text" style="color:white; font-size:0.9em; margin:0;">យល់ព្រម / Start</span>
         </button>
@@ -446,8 +512,9 @@
 
     <div class="footer">
       @SendaiNikaHighSchool2026 Global Study II Rainwater group<br>
-      System creat by kunisealiner Ver.β2.10<br>
-      「Ver.β2.10 アップデート情報」　　内部データの保護の為、セキュリティ向上コードを実装しました
+      System created by kunisealiner Ver.β1.12<br>
+      「Ver.β2.20 更新情報」<br>
+      調査員メニューの作成と内部データセキュリティ向上コードの実装
     </div>
   </div>
 
@@ -470,15 +537,19 @@
     let map, markersGroup;
     let adminMap, adminMarkersGroup;
     let qrGenerator = null;
-    let gutterChartInstance = null; // グラフのインスタンス管理用
-    let globalAdminRawData = [];   // CSVダウンロード用の全件キャッシュ
+    let gutterChartInstance = null; 
+    let globalAdminRawData = [];   
 
+    // 起動時処理
     window.onload = function() {
         const urlParams = new URLSearchParams(window.location.search);
         let paramId = urlParams.get('id');
         let savedId = localStorage.getItem('my_saved_house_id');
+        let isInspector = localStorage.getItem('is_inspector');
 
-        if (paramId) {
+        if (isInspector === 'true') {
+            showView('view-researcher');
+        } else if (paramId) {
             houseId = paramId;
             localStorage.setItem('my_saved_house_id', houseId);
             enterAsResident();
@@ -486,7 +557,7 @@
             houseId = savedId;
             enterAsResident();
         } else {
-            showView('view-register');
+            showView('view-welcome'); // まっさらな状態なら初期選択ウェルカム画面へ
         }
     };
 
@@ -569,7 +640,6 @@
 
         db.collection("house_logs").add(logData).then(() => {
             localStorage.setItem('my_saved_house_id', houseId);
-            
             document.getElementById('modal-generated-id').innerText = houseId;
             document.getElementById('reg-success-modal').classList.remove('hidden');
             
@@ -591,23 +661,87 @@
         document.getElementById(id).classList.remove('hidden');
         if(id === 'view-history') initMap();
         if(id === 'view-admin') initAdminDashboard(); 
+        if(id === 'view-researcher') updateInspectorLabel();
+        if(id === 'view-inspector-profile') initInspectorProfileView();
     }
 
-    /* 【改良箇所】ハッシュ化(SHA-256)による安全な認証への変更 */
-    function checkAuth() {
+    // パスワード認証ロジック（大文字/小文字ミスをトリムでカバー）
+    function checkAuth(target) {
+        if (target === 'menu' && localStorage.getItem('is_inspector') === 'true') {
+            showView('view-researcher');
+            return;
+        }
+
         const pass = prompt("調査員用パスワードを入力してください:");
-        if (pass === null) return; // キャンセルされたら何もしない
+        if (pass === null) return; 
 
-        // 入力されたパスワードをSHA-256でハッシュ化（暗号化）
-        const hashedPassword = CryptoJS.SHA256(pass).toString();
-
-        // パスワード生データ（RJSS）を暗号化した文字列
-        const correctHash = "e95819777df48074697920ec6113b2c2be0cbda9ad9bfa8130eb5a9a473ec0b2";
+        // 入力値を前後の余白カット(trim) & 大文字に統一してハッシュ計算
+        const hashedPassword = CryptoJS.SHA256(pass.trim().toUpperCase()).toString();
+        // パスワード「RJSS」の正しいSHA-256ハッシュ値に修正完了
+        const correctHash = "9a9f3d1372b94008b4bb33859dadd47ff406d2143d6f015b3118c8a986677376";
 
         if (hashedPassword === correctHash) {
-            showView('view-researcher');
+            if (target === 'register') {
+                showView('view-register-inspector'); 
+            } else {
+                showView('view-researcher'); 
+            }
         } else {
             alert("パスワードが違います / Incorrect password");
+        }
+    }
+
+    function saveNewInspectorProfile() {
+        const name = document.getElementById('ins-reg-name').value.trim();
+        const studentId = document.getElementById('ins-reg-studentId').value.trim();
+        const group = document.getElementById('ins-reg-group').value.trim();
+
+        if (!name || !studentId || !group) {
+            return alert("すべての項目を入力してください。");
+        }
+
+        localStorage.setItem('is_inspector', 'true');
+        localStorage.setItem('inspector_name', name);
+        localStorage.setItem('inspector_student_id', studentId);
+        localStorage.setItem('inspector_group', group);
+
+        alert("調査員登録が完了しました！");
+        showView('view-researcher');
+    }
+
+    function updateInspectorLabel() {
+        const name = localStorage.getItem('inspector_name') || "未ログイン";
+        const group = localStorage.getItem('inspector_group') || "";
+        document.getElementById('lbl-current-inspector').innerText = group ? `${name} (${group})` : name;
+    }
+
+    function initInspectorProfileView() {
+        document.getElementById('ins-prof-name').value = localStorage.getItem('inspector_name') || "";
+        document.getElementById('ins-prof-studentId').value = localStorage.getItem('inspector_student_id') || "";
+        document.getElementById('ins-prof-group').value = localStorage.getItem('inspector_group') || "";
+    }
+
+    function updateInspectorProfile() {
+        const name = document.getElementById('ins-prof-name').value.trim();
+        const studentId = document.getElementById('ins-prof-studentId').value.trim();
+        const group = document.getElementById('ins-prof-group').value.trim();
+
+        if (!name || !studentId || !group) {
+            return alert("空欄にすることはできません。");
+        }
+
+        localStorage.setItem('inspector_name', name);
+        localStorage.setItem('inspector_student_id', studentId);
+        localStorage.setItem('inspector_group', group);
+
+        alert("調査員情報を更新しました！");
+        showView('view-researcher');
+    }
+
+    function logoutInspector() {
+        if (confirm("調査員モードからログアウトしますか？\n(この端末に保存されているあなたの氏名・学籍番号データは完全に消去されます)")) {
+            localStorage.clear(); // 完全に初期化
+            location.reload();
         }
     }
 
@@ -688,6 +822,11 @@
     function clearFormAndOpen() {
         document.getElementById('form-title-mode').innerText = "新規調査記録";
         document.getElementById('form-target-id').innerText = houseId ? houseId : "選択されていません";
+        
+        const name = localStorage.getItem('inspector_name') || "";
+        const group = localStorage.getItem('inspector_group') || "";
+        document.getElementById('inspector').value = group ? `${name} (${group})` : name;
+
         document.getElementById('ownerName').value = '';
         document.getElementById('familySize').value = '';
         document.getElementById('notes').value = '';
@@ -703,6 +842,11 @@
 
         document.getElementById('form-title-mode').innerText = "追跡・追加調査記録";
         document.getElementById('form-target-id').innerText = id;
+
+        const name = localStorage.getItem('inspector_name') || "";
+        const group = localStorage.getItem('inspector_group') || "";
+        document.getElementById('inspector').value = group ? `${name} (${group})` : name;
+
         document.getElementById('ownerName').value = currentOwner || "";
         document.getElementById('familySize').value = currentSize || "";
         document.getElementById('notes').value = "【追跡調査】";
@@ -730,7 +874,6 @@
 
               const latestHouses = {};
               let coords = [];
-
               let chartCounts = { "あり (Yes)": 0, "なし (No)": 0, "破損・修理が必要": 0, "未確認": 0 };
 
               snap.forEach(doc => {
@@ -779,10 +922,7 @@
 
     function drawGutterChart(counts) {
         const ctx = document.getElementById('gutterChart').getContext('2d');
-        
-        if (gutterChartInstance) {
-            gutterChartInstance.destroy(); 
-        }
+        if (gutterChartInstance) { gutterChartInstance.destroy(); }
 
         gutterChartInstance = new Chart(ctx, {
             type: 'pie',
