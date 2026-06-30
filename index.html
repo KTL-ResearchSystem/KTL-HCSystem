@@ -274,9 +274,9 @@
         <span class="eng-text" style="font-weight: bold; color: var(--main-purple);">Register Your Home</span>
         <span class="jap-text" style="font-weight: bold; color: var(--main-purple);">【初回のみ】マイホーム登録</span>
         <p style="font-size: 0.8em; color:#666; margin-top:5px;">
-          <span style="display:block;">បន្ទាប់ពីចុះឈ្មោះរួច លេខសម្គាល់ផ្ទះ (House ID) ផ្ទាល់ខ្លួនជារបស់អ្នកនឹងត្រូវបង្កើតឡើងដោយស្វ័យប្រវត្តិ។</span>
+          <span style="display:block;">បន្ទាប់ពីចុះឈ្មោះរួច លេខសម្គាល់ផ្ទះ (House ID) ផ្ទាល់ខ្លួនជារបស់អ្នកនឹងត្រូវបង្កើតឡើងដោយស្វ័យប្រវត្តិ。</span>
           <span style="display:block; margin-top:2px;">After registering, your own unique House ID will be automatically generated.</span>
-          <span style="display:block; color:#999; margin-top:2px;">※登録するとあなた専用のHouse ID番号が自動発行されます。</span>
+          <span style="display:block; color:#999; margin-top:2px;">※登録するとあなた専用 of House ID番号が自動発行されます。</span>
         </p>
 
         <hr style="border: 0; border-top: 1px solid #eee; margin: 15px 0;">
@@ -373,11 +373,20 @@
           👤 担当調査員: <b id="lbl-current-inspector">未登録</b>
         </div>
 
+        <!-- 復旧したHouse ID確認・変更機能エリア -->
+        <div style="background: #fff3e0; padding: 12px; border-radius: 8px; font-size: 0.85em; margin-bottom: 15px; color: #e65100; border: 1px solid #ffe0b2;">
+          🏠 選択中のHouse ID: <b id="lbl-current-house-id">未設定</b>
+          <div style="display: flex; gap: 5px; margin-top: 8px; align-items: center;">
+            <input type="text" id="inspector-change-house-id" placeholder="例: H-0001" style="margin: 0; padding: 6px 10px; font-size: 14px; height: 36px; box-sizing: border-box; background: white;">
+            <button class="btn-blue" onclick="changeHouseIdFromInspector()" style="margin: 0; width: auto; padding: 0 15px; font-size: 14px; height: 36px; background: #f57c00; box-sizing: border-box; line-height: 1;">変更</button>
+          </div>
+        </div>
+
         <button class="btn-blue" onclick="clearFormAndOpen()">✍️ 新規調査記録</button>
         <button class="btn-outline" onclick="showView('view-history')">🏠 選択中ハウスの履歴・マップ</button>
         <button class="btn-blue" style="background: #34495e;" onclick="showView('view-inspector-profile')">👤 調査員情報の確認・更新</button>
         <button class="btn-purple" onclick="showView('view-admin')" style="margin-top: 15px;">⚙️ 管理者ダッシュボード（全データ）</button>
-        <button class="btn-outline" onclick="logoutInspector()" style="margin-top: 20px; border-color: #ffcccc; color: #d32f2f;">🚪 ログアウト (情報クリア)</button>
+        <button class="btn-outline" onclick="logoutInspector()" style="margin-top: 20px; border-color: #ccc; color: #555;">🚪 ログアウト (住民画面へ)</button>
       </div>
     </div>
 
@@ -512,9 +521,9 @@
 
     <div class="footer">
       @SendaiNikaHighSchool2026 Global Study II Rainwater group<br>
-      System created by kunisealiner Ver.β2.30<br>
-      「Ver.β2.30 更新情報」<br>
-      履歴保存コードの修正・保存データのセキュリティ向上・調査員ページの更新
+      System created by kunisealiner Ver.β2.40<br>
+      「Ver.β2.40 更新情報」<br>
+      履歴保存コードの修正・保存データのセキュリティ向上・調査員ページの更新・細かいバグ修正
     </div>
   </div>
 
@@ -557,7 +566,7 @@
             houseId = savedId;
             enterAsResident();
         } else {
-            showView('view-welcome'); // まっさらな状態なら初期選択ウェルカム画面へ
+            showView('view-welcome'); 
         }
     };
 
@@ -661,11 +670,13 @@
         document.getElementById(id).classList.remove('hidden');
         if(id === 'view-history') initMap();
         if(id === 'view-admin') initAdminDashboard(); 
-        if(id === 'view-researcher') updateInspectorLabel();
+        if(id === 'view-researcher') {
+            updateInspectorLabel();
+            updateInspectorHouseIdLabel(); // 調査員メニュー表示のタイミングでID表示を更新
+        }
         if(id === 'view-inspector-profile') initInspectorProfileView();
     }
 
-    // パスワード認証ロジック（大文字/小文字ミスをトリムでカバー）
     function checkAuth(target) {
         if (target === 'menu' && localStorage.getItem('is_inspector') === 'true') {
             showView('view-researcher');
@@ -675,9 +686,7 @@
         const pass = prompt("調査員用パスワードを入力してください:");
         if (pass === null) return; 
 
-        // 入力値を前後の余白カット(trim) & 大文字に統一してハッシュ計算
         const hashedPassword = CryptoJS.SHA256(pass.trim().toUpperCase()).toString();
-        // パスワード「RJSS」の正しいSHA-256ハッシュ値に修正完了
         const correctHash = "9a9f3d1372b94008b4bb33859dadd47ff406d2143d6f015b3118c8a986677376";
 
         if (hashedPassword === correctHash) {
@@ -715,6 +724,12 @@
         document.getElementById('lbl-current-inspector').innerText = group ? `${name} (${group})` : name;
     }
 
+    // 調査員メニュー内のHouse IDラベル表示を更新
+    function updateInspectorHouseIdLabel() {
+        document.getElementById('lbl-current-house-id').innerText = houseId ? houseId : "未設定";
+        document.getElementById('inspector-change-house-id').value = houseId || "";
+    }
+
     function initInspectorProfileView() {
         document.getElementById('ins-prof-name').value = localStorage.getItem('inspector_name') || "";
         document.getElementById('ins-prof-studentId').value = localStorage.getItem('inspector_student_id') || "";
@@ -738,13 +753,22 @@
         showView('view-researcher');
     }
 
+    // ログアウト機能の変更（データを消さず、住民メニューへ切り替える）
     function logoutInspector() {
-        if (confirm("調査員モードからログアウトしますか？\n(この端末に保存されているあなたの氏名・学籍番号データは完全に消去されます)")) {
-            localStorage.clear(); // 完全に初期化
-            location.reload();
+        if (confirm("調査員モードを終了して住民画面に戻りますか？\n(登録された氏名・学籍番号データは保存されたまま残ります)")) {
+            localStorage.removeItem('is_inspector'); // 調査員の自動ログインのみ解除
+            
+            let savedId = localStorage.getItem('my_saved_house_id');
+            if (savedId) {
+                houseId = savedId;
+                enterAsResident(); // 住民用のパンフレット等があるメイン画面へ
+            } else {
+                showView('view-welcome');
+            }
         }
     }
 
+    // ヘッダー側のID変更処理（各UI表示と同期）
     function changeHouseIdHandy() {
         const newId = document.getElementById('input-house-id').value.trim();
         if (!newId) {
@@ -755,7 +779,29 @@
         houseId = newId;
         localStorage.setItem('my_saved_house_id', houseId);
         alert(`House ID を 「${houseId}」 に変更しました！`);
+        
+        if (!document.getElementById('view-researcher').classList.contains('hidden')) {
+            updateInspectorHouseIdLabel();
+        }
         if (!document.getElementById('view-history').classList.contains('hidden')) loadHistory();
+    }
+
+    // 調査員メニュー側のID変更処理
+    function changeHouseIdFromInspector() {
+        const newId = document.getElementById('inspector-change-house-id').value.trim();
+        if (!newId) {
+            alert("IDを空欄にすることはできません。");
+            return;
+        }
+        houseId = newId;
+        localStorage.setItem('my_saved_house_id', houseId);
+        
+        // ヘッダー側の入力欄とも内容を同期させる
+        document.getElementById('input-house-id').value = houseId;
+        document.getElementById('id-manage-area').classList.remove('hidden');
+        
+        alert(`House ID を 「${houseId}」 に変更しました！`);
+        updateInspectorHouseIdLabel();
     }
 
     function initMap() {
