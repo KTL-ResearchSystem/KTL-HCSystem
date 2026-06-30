@@ -274,7 +274,7 @@
         <span class="eng-text" style="font-weight: bold; color: var(--main-purple);">Register Your Home</span>
         <span class="jap-text" style="font-weight: bold; color: var(--main-purple);">【初回のみ】マイホーム登録</span>
         <p style="font-size: 0.8em; color:#666; margin-top:5px;">
-          <span style="display:block;">បន្ទាប់ពីចុះឈ្មោះរួច លេខសម្គាល់ផ្ទះ (House ID) ផ្ទាល់ខ្លួនជារបស់អ្នកនឹងត្រូវបង្កើតឡើងដោយស្វ័យប្រវត្តិ。</span>
+          <span style="display:block;">បន្ទាប់ពីចុះឈ្មោះរួច លេខសម្គាល់ផ្ទះ (House ID) ផ្ទាល់ខ្លួនជារបស់អ្នកនឹងត្រូវបង្កើតឡើងដោយស្វ័យប្រវត្តិ Microsoft。</span>
           <span style="display:block; margin-top:2px;">After registering, your own unique House ID will be automatically generated.</span>
           <span style="display:block; color:#999; margin-top:2px;">※登録するとあなた専用 of House ID番号が自動発行されます。</span>
         </p>
@@ -406,6 +406,9 @@
         
         <button class="btn-blue" onclick="updateInspectorProfile()">🔄 情報を更新する</button>
         <button class="btn-outline" onclick="showView('view-researcher')">戻る</button>
+        
+        <hr style="border: 0; border-top: 1px dashed #e74c3c; margin: 25px 0 15px 0;">
+        <button style="background: #e74c3c; color: white;" onclick="deleteInspectorDataAndReset()">⚠️ この端末から調査員登録を削除する</button>
       </div>
     </div>
 
@@ -751,6 +754,28 @@
 
         alert("調査員情報を更新しました！");
         showView('view-researcher');
+    }
+
+    // 調査員データを完全に削除して初期化する関数
+    function deleteInspectorDataAndReset() {
+        if (confirm("本当にこの端末から調査員登録を削除しますか？\n登録されている名前、学籍番号、グループ情報がすべて消去され、初期画面に戻ります。")) {
+            
+            localStorage.removeItem('is_inspector');
+            localStorage.removeItem('inspector_name');
+            localStorage.removeItem('inspector_student_id');
+            localStorage.removeItem('inspector_group');
+            
+            document.getElementById('ins-prof-name').value = "";
+            document.getElementById('ins-prof-studentId').value = "";
+            document.getElementById('ins-prof-group').value = "";
+            document.getElementById('ins-reg-name').value = "";
+            document.getElementById('ins-reg-studentId').value = "";
+            document.getElementById('ins-reg-group').value = "";
+
+            alert("調査員の登録データを完全に削除しました。");
+            
+            showView('view-welcome');
+        }
     }
 
     // ログアウト機能の変更（データを消さず、住民メニューへ切り替える）
