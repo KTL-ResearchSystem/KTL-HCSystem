@@ -16,6 +16,8 @@
 
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.1.1/crypto-js.min.js"></script>
+
   <style>
     :root {
       --main-green: #27ae60;
@@ -252,7 +254,7 @@
         <span class="eng-text" style="font-weight: bold; color: var(--main-purple);">Register Your Home</span>
         <span class="jap-text" style="font-weight: bold; color: var(--main-purple);">【初回のみ】マイホーム登録</span>
         <p style="font-size: 0.8em; color:#666; margin-top:5px;">
-          <span style="display:block;">បន្ទាប់ពីចុះឈ្មោះរួច លេខសម្គាល់ផ្ទះ (House ID) ផ្ទាល់ខ្លួនជារបស់អ្នកនឹងត្រូវបង្កើតឡើងដោយស្វ័យប្រវត្តិ។</span>
+          <span style="display:block;">បន្ទាប់ពីចុះឈ្មោះរួច លេខសម្គាល់ផ្ទះ (House ID) ផ្ទាល់ខ្លួនជារបស់អ្នកនឹងត្រូវបង្កើតឡើងដោយស្វ័យប្រវត្តិ。</span>
           <span style="display:block; margin-top:2px;">After registering, your own unique House ID will be automatically generated.</span>
           <span style="display:block; color:#999; margin-top:2px;">※登録するとあなた専用のHouse ID番号が自動発行されます。</span>
         </p>
@@ -444,7 +446,8 @@
 
     <div class="footer">
       @SendaiNikaHighSchool2026 Global Study II Rainwater group<br>
-      System creat by kunisealiner Ver.β1.11 
+      System creat by kunisealiner Ver.β2.10<br>
+      「Ver.β2.10 アップデート情報」　　内部データの保護の為、セキュリティ向上コードを実装しました
     </div>
   </div>
 
@@ -567,7 +570,6 @@
         db.collection("house_logs").add(logData).then(() => {
             localStorage.setItem('my_saved_house_id', houseId);
             
-            // 【改良】無機質なアラートではなく、綺麗な多言語モーダルを起動
             document.getElementById('modal-generated-id').innerText = houseId;
             document.getElementById('reg-success-modal').classList.remove('hidden');
             
@@ -591,12 +593,21 @@
         if(id === 'view-admin') initAdminDashboard(); 
     }
 
+    /* 【改良箇所】ハッシュ化(SHA-256)による安全な認証への変更 */
     function checkAuth() {
         const pass = prompt("調査員用パスワードを入力してください:");
-        if(pass === "RJSS") {
+        if (pass === null) return; // キャンセルされたら何もしない
+
+        // 入力されたパスワードをSHA-256でハッシュ化（暗号化）
+        const hashedPassword = CryptoJS.SHA256(pass).toString();
+
+        // パスワード生データ（RJSS）を暗号化した文字列
+        const correctHash = "e95819777df48074697920ec6113b2c2be0cbda9ad9bfa8130eb5a9a473ec0b2";
+
+        if (hashedPassword === correctHash) {
             showView('view-researcher');
-        } else if (pass !== null) {
-            alert("パスワードが違います");
+        } else {
+            alert("パスワードが違います / Incorrect password");
         }
     }
 
@@ -674,7 +685,6 @@
         loadAdminData();
     }
 
-    // 【改良】新規登録と追跡（追加）調査を明確に切り分けるボタン処理
     function clearFormAndOpen() {
         document.getElementById('form-title-mode').innerText = "新規調査記録";
         document.getElementById('form-target-id').innerText = houseId ? houseId : "選択されていません";
@@ -686,7 +696,6 @@
         showView('view-form');
     }
 
-    // 【改良】管理者画面から特定の家を指定して「追跡（追加）調査」へジャンプする機能
     function adminPrepareFollowUp(id, currentOwner, currentSize) {
         houseId = id;
         document.getElementById('input-house-id').value = id;
@@ -713,7 +722,7 @@
           .get()
           .then(snap => {
               tbody.innerHTML = "";
-              globalAdminRawData = []; // キャッシュクリア
+              globalAdminRawData = []; 
               if (snap.empty) {
                   tbody.innerHTML = "<tr><td colspan='5' style='text-align:center;'>記録なし</td></tr>";
                   return;
@@ -722,16 +731,14 @@
               const latestHouses = {};
               let coords = [];
 
-              // グラフ集計用のカウンタ
               let chartCounts = { "あり (Yes)": 0, "なし (No)": 0, "破損・修理が必要": 0, "未確認": 0 };
 
               snap.forEach(doc => {
                   const d = doc.data();
-                  globalAdminRawData.push(d); // CSV用に全件保存
+                  globalAdminRawData.push(d); 
                   
                   if (!latestHouses[d.houseId]) {
                       latestHouses[d.houseId] = d;
-                      // 最終更新状態をグラフ集計対象にする
                       if (chartCounts[d.hasGutter] !== undefined) {
                           chartCounts[d.hasGutter]++;
                       } else {
@@ -746,7 +753,6 @@
                   }
               });
 
-              // グラフ描画呼び出し
               drawGutterChart(chartCounts);
 
               const sortedIds = Object.keys(latestHouses).sort();
@@ -771,12 +777,11 @@
           });
     }
 
-    // 【改良】Chart.jsによる雨樋普及状況グラフの生成・更新処理
     function drawGutterChart(counts) {
         const ctx = document.getElementById('gutterChart').getContext('2d');
         
         if (gutterChartInstance) {
-            gutterChartInstance.destroy(); // 既存のグラフを破棄して再描画
+            gutterChartInstance.destroy(); 
         }
 
         gutterChartInstance = new Chart(ctx, {
@@ -798,11 +803,10 @@
         });
     }
 
-    // 【改良】ワンクリックCSVダウンロード（Shift-JIS/Excel文字化けを防ぐBOM付き）
     function downloadCSV() {
         if(globalAdminRawData.length === 0) return alert("出力するデータがありません。");
 
-        let csvContent = "\uFEFF"; // Excel用のBOM(文字化け防止)
+        let csvContent = "\uFEFF"; 
         csvContent += "HouseID,調査・登録者,家主名,世帯人数,雨樋状況,メモ,緯度,経度,日時\n";
 
         globalAdminRawData.forEach(d => {
@@ -880,7 +884,6 @@
         btn.innerText = "⏳ 位置情報を取得中...";
 
         navigator.geolocation.getCurrentPosition(pos => {
-            // 【改良】GPSの精度（誤差が何メートルか）を画面上に判定・表示する処理
             const accuracy = pos.coords.accuracy;
             gpsStatus.innerText = `📡 GPS精度: 誤差範囲 ±${Math.round(accuracy)}m`;
             if(accuracy > 100) {
